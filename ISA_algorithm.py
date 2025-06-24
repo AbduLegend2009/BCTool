@@ -15,7 +15,7 @@ def ISA_single_seed(X:np.array,t_g,t_c,seed_size=5,max_iter=100):
         raise ValueError(
             f"seed_size ({seed_size}) exceeds the number of conditions "
             f"({m_conditions}); choose seed_size ≤ m_conditions.")
-
+#update
     # Create new nparray with all zeros for unselected conditions
     s_c_old=np.zeros(m_conditions,dtype=int)
     # Choose random indices with same amount of selected conditions as the seed size
