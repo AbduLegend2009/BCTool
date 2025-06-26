@@ -10,7 +10,12 @@ def purging(X:np.ndarray , selected_genes , selected_conditions , msr_threshold,
     selected_conditions_mean=X.mean(axis=0,keepdims=True)
     sub_mean=sub.mean()
     residues=sub-selected_gene_mean-selected_conditions_mean+sub_mean
-    msr=
+    msr=(residues**2).mean()
+    if msr<=msr_threshold:
+        return selected_genes, selected_conditions
+    violations=np.abs(residues)>msr_threshold
+    gene_violations=violations.sum(axis=1)
+    condition_violations=violations.sum(axis=0)
 
     
    
