@@ -126,7 +126,7 @@ def bivisu(
 # ------------------------------------------------------------
 # Example usage (comment out when importing as library)
 # ------------------------------------------------------------
-if __name__ == "__main__":
+'''if __name__ == "__main__":
     # small synthetic example
     X_demo = np.array([
         [10, 12, 14, 18],
@@ -136,4 +136,4 @@ if __name__ == "__main__":
 #update
     bicls = bivisu(X_demo, model="auto", eps=0.25, thr=0.04, min_rows=2, min_cols=2)
     for k, (R, C) in enumerate(bicls, 1):
-        print(f"Bicluster {k}: rows {sorted(R)} cols {sorted(C)}")
+        print(f"Bicluster {k}: rows {sorted(R)} cols {sorted(C)}")'''
