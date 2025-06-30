@@ -129,7 +129,7 @@ ALGORITHMS: Dict[str, Tuple[Callable[..., Any], Dict[str, Any]]] = {
     "Chen & Church": (_wrap_chen, {"msr_threshold": 0.6, "alpha": 0.05, "max_biclusters": 10}),
     "LAS": (_wrap_las, {"max_iter": 100, "alpha": 0.05}),
     "ISA": (_wrap_isa, {"n_seeds": 500, "seed_size": 5, "t_g": 2.0, "t_c": 2.0, "max_iter": 100, "jaccard_thresh": 0.9}),
-    "BiVisu": (_wrap_bivisu, {"eps": 0.3, "thr": 0.05, "min_rows": 5, "min_cols": 2, "max_iters": 5}),
+    "BiVisu": (_wrap_bivisu, {"model": "auto", "eps": 0.3, "thr": 0.05, "min_rows": 5, "min_cols": 2, "max_iters": 5}),
 }
 
 # ----------------------------------------------------------------------------
@@ -330,3 +330,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
