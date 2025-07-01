@@ -3,3 +3,4 @@ import Bivisu_algorithm
 import Chen_Church_algorithm
 import ISA_algorithm
 import OPSM_algorithm
+import BCTool_GUI
