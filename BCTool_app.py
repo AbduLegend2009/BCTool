@@ -2,7 +2,7 @@
 =======================
 End‑to‑end dashboard that lets you
 • upload a CSV/TSV *or* GEO `series_matrix.txt(.gz)` file,
-• run five biclustering algorithms (Cheng‑Church, LAS, ISA, BiVisu, OPSM),
+• run five biclustering algorithms (Chen‑Church, LAS, ISA, BiVisu, OPSM),
 • visualise GO‑enrichment percentages, compare methods and explore biclusters,
 • export all bicluster cells as one CSV.
 
@@ -88,7 +88,7 @@ def _wrap_opsm(X: np.ndarray, **kw):
 
 
 ALGORITHMS: Dict[str, Tuple[Callable[..., Any], Dict[str, Any]]] = {
-    "Cheng & Church": (
+    "Chen & Church": (
         _wrap_chen,
         {"msr_threshold": 0.6, "alpha": 0.05, "max_biclusters": 10},
     ),
