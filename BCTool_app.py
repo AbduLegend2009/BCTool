@@ -210,5 +210,10 @@ def main():
     # GO settings
     st.sidebar.header("3️⃣ GO settings")
     go_cat = st.sidebar.selectbox("Category", ["BP", "MF", "CC"], index=0)
-    thr_selected = st.sidebar.multiselect("P-value thresholds", [str(t) for t in PV_THRESHOLDS], default=[str
+    thr_selected = st.sidebar.multiselect(
+        "P-value thresholds",
+        [f"{t:.0e}" for t in PV_THRESHOLDS],
+        default=[f"{t:.0e}" for t in PV_THRESHOLDS],
+    )
+    thr_selected_f = sorted(float(t) for t in thr_selected)
 
