@@ -1,11 +1,7 @@
 import streamlit as st
 import pandas as pd
-from LAS_algorithm import las_with_significance
-from Chen_Church_algorithm import run_chen_church
-from Bivisu_algorithm import bivisu
-from ISA_algorithm import ISA_multi_seed
-from OPSM_algorithm import run_opsm
 from GO_assessment import go_assessment
+from adapter import ALL_ALGOS, Bicluster
 def upload_matrix():
     """Handles the CSV uploader and populates session_state."""
     file = st.sidebar.file_uploader("Upload gene-expression matrix (CSV)")
@@ -23,5 +19,9 @@ def run_biclusters():
     alg_options = ["LAS", "ISA", "OPSM", "Bivisu", "Chen and Church"]
     sel_algs = st.sidebar.multiselect("Choose algorithms", alg_options, default = [])
     st.session_state["sel_algs"]=sel_algs
-    algo_map = {"LAS":las_with_significance, "Chen_and_Church":run_chen_church, "Bivisu": bivisu, "ISA": ISA_multi_seed, "OPSM": run_opsm}
+    for alg in sel_algs:
+        for i, bic in enumerate(ALL_ALGOS[alg](df.values), 1):
+            biclusters[f"{alg}-{i}"] = list(df.index[bic.rows])
+    return biclusters
     
+
