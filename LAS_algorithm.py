@@ -4,6 +4,8 @@ from scipy.stats import norm
 
 
 def las_with_significance(test_array, testarray_rows, testarray_cols, max_iter=100, alpha=0.05):
+   
+    #variables
     num_rows = testarray_rows
     num_columns = testarray_cols
     standard_deviation = test_array.std()
