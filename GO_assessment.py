@@ -1,146 +1,130 @@
+"""GO_assessment.py  ▸  Gene Ontology enrichment helper for BCTool
+-------------------------------------------------------------------
+Given a mapping of *algorithm → list[Bicluster]* produced by the GUI, run
+BH‑corrected GO enrichment for every bicluster and return a tidy
+pandas DataFrame that Streamlit can render or download.
+
+External dependency:  ``pip install goatools``
+
+A *Bicluster* must expose one of these attributes:
+    • ``.genes``  – iterable of gene identifiers (preferred)
+    • ``.rows``   – fallback name used by some adapters
+
+The background (universe) set defaults to *all* uploaded gene IDs.
+"""
 from __future__ import annotations
 
-"""Gene Ontology (GO) enrichment helper for BCTool.
-
-This module exposes a single public function, ``go_assessment``.
-Given a mapping of algorithm → list[ Bicluster ], it computes
-Benjamini–Hochberg‑corrected GO‑term enrichment for every bicluster
-and returns a tidy ``pandas.DataFrame`` that Streamlit can render
-or the user can download as CSV.
-
-Requirements
-------------
-$ pip install goatools pandas
-
-Notes
------
-*   GO data (``go-basic.obo`` and NCBI ``gene2go``) are downloaded once
-    and cached in the user’s home directory. The heavy parsing work is
-    memoised via ``functools.lru_cache`` so repeated GUI calls are fast.
-*   ``taxid`` defaults to **9606 (Homo sapiens)**. Override if you’re
-    analysing a different organism.
-"""
-
+import pandas as pd
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Iterable, Mapping, Sequence, Any
 
-import pandas as pd
-from goatools.base import download_go_basic_obo, download_ncbi_associations
-from goatools.goea.go_enrichment_ns import GOEnrichmentStudyNS
+from goatools.base import (
+    download_go_basic_obo,
+    download_ncbi_associations,
+)
 from goatools.obo_parser import GODag
+from goatools.goea.go_enrichment_ns import GOEnrichmentStudyNS
 
 __all__ = ["go_assessment"]
 
-# ──────────────────────────────────────────────────────────
-# Helpers
-# ──────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
+# Internal: download + cache GOEA object
+# ────────────────────────────────────────────────────────────
 
-def _ensure_int_ids(ids: Iterable) -> set[int]:
-    """Return a *set* of numeric gene IDs, discarding any junk strings."""
-    return {int(g) for g in ids if str(g).isdigit()}
+@lru_cache(maxsize=2)
+def _init_goea(taxid: int, universe: tuple[int, ...]) -> GOEnrichmentStudyNS:  # type: ignore[name‑defined]
+    """Return a cached GOEnrichmentStudyNS for the given species/universe."""
+    obo_path: Path = Path(download_go_basic_obo())
+    gene2go_path: Path = Path(download_ncbi_associations(taxid))
 
-
-@lru_cache(maxsize=1)
-def _build_goea(taxid: int, universe: Tuple[int, ...]) -> GOEnrichmentStudyNS:  # type: ignore[name-defined]
-    """Download resources (if needed) and build a memoised GOEA object."""
-    obo_path = Path(download_go_basic_obo())
-    gene2go_path = Path(download_ncbi_associations(taxid))
-
+    # Build GO DAG
     obodag = GODag(obo_path)
 
+    # Parse gene2go → {gene: {go1, go2, …}}
     gene2go: dict[int, set[str]] = {}
     with gene2go_path.open() as fh:
         for line in fh:
             if line.startswith("#"):
-                continue  # skip comment/header
+                continue
             _tax, gene, go_id, *_ = line.split("\t")
-            gene2go.setdefault(int(gene), set()).add(go_id)
+            gene = int(gene)
+            gene2go.setdefault(gene, set()).add(go_id)
 
     return GOEnrichmentStudyNS(
-        universe,
+        set(universe),
         gene2go,
         obodag,
         propagate_counts=False,
-        methods=["fdr_bh"],  # Benjamini–Hochberg FDR
+        methods=["fdr_bh"],  # Benjamini–Hochberg
     )
 
-
-# ──────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
 # Public API
-# ──────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
+
+def _extract_genes(bic: Any) -> Sequence[str]:
+    """Return the list of gene IDs from a Bicluster object."""
+    if hasattr(bic, "genes"):
+        return bic.genes  # type: ignore[attr‑defined]
+    if hasattr(bic, "rows"):
+        return bic.rows   # type: ignore[attr‑defined]
+    raise AttributeError("Bicluster lacks .genes / .rows attribute")
 
 def go_assessment(
-    results: Dict[str, Iterable],
-    gene_ids: Iterable,
+    results: Mapping[str, Sequence[Any]],
+    gene_ids: Iterable[Any],
     *,
     taxid: int = 9606,
     alpha: float = 0.05,
 ) -> pd.DataFrame:
-    """Compute GO enrichment for every bicluster in *results*.
+    """Compute GO enrichment for every bicluster.
 
     Parameters
     ----------
-    results
-        ``{"algo_name": list[bicluster, …], …}``.  Each bicluster must
-        expose either a ``genes`` attribute **or** a ``rows`` attribute
-        containing an iterable of gene IDs compatible with the chosen
-        organism’s NCBI gene2go mapping.
-    gene_ids
-        Background universe — typically ``expr_df.index`` from the GUI.
-    taxid
-        NCBI Taxonomy ID.  Defaults to *9606* (human).
-    alpha
-        Significance threshold after BH‑FDR correction (default 0.05).
+    results : dict
+        Mapping *algorithm → list[Bicluster]*.
+    gene_ids : iterable
+        All gene identifiers present in the uploaded matrix (background).
+    taxid : int, default 9606
+        NCBI taxonomy ID (9606 = Homo sapiens).
+    alpha : float, default 0.05
+        FDR threshold for significance.
 
     Returns
     -------
-    pandas.DataFrame
-        Columns: *algorithm, bicluster_id, GO_ID, term, p_FDR,
-        study_hits, pop_hits*.
+    pd.DataFrame
+        Columns: [algorithm, bicluster_id, GO_ID, name, p_FDR,
+                  study_hits, pop_hits]
     """
-    universe_set = _ensure_int_ids(gene_ids)
-    goea = _build_goea(taxid, tuple(universe_set))
+    # Build universe of integer gene IDs (required by goatools)
+    universe_int = [int(g) for g in gene_ids if str(g).isdigit()]
+    goea = _init_goea(taxid, tuple(universe_int))
 
-    hits: List[dict] = []
-
+    rows: list[dict[str, Any]] = []
     for algo, bicls in results.items():
-        for idx, bc in enumerate(bicls):
-            genes = _ensure_int_ids(
-                getattr(bc, "genes", getattr(bc, "rows", []))
-            )
+        for idx, bic in enumerate(bicls):
+            genes = [int(g) for g in _extract_genes(bic) if str(g).isdigit()]
             if not genes:
-                continue  # skip empty or non‑numeric sets
+                continue
+            for r in goea.run_study(genes):
+                if r.p_fdr_bh <= alpha:
+                    rows.append({
+                        "algorithm"   : algo,
+                        "bicluster_id": idx,
+                        "GO_ID"       : r.GO,
+                        "name"        : r.name,
+                        "p_FDR"       : r.p_fdr_bh,
+                        "study_hits"  : f"{r.study_count}/{r.study_n}",
+                        "pop_hits"    : f"{r.pop_count}/{r.pop_n}",
+                    })
 
-            for res in goea.run_study(genes):  # type: ignore[attr-defined]
-                if res.p_fdr_bh <= alpha:
-                    hits.append(
-                        {
-                            "algorithm": algo,
-                            "bicluster_id": idx,
-                            "GO_ID": res.GO,
-                            "term": res.name,
-                            "p_FDR": res.p_fdr_bh,
-                            "study_hits": f"{res.study_count}/{res.study_n}",
-                            "pop_hits": f"{res.pop_count}/{res.pop_n}",
-                        }
-                    )
+    if not rows:
+        return pd.DataFrame(columns=[
+            "algorithm","bicluster_id","GO_ID","name",
+            "p_FDR","study_hits","pop_hits",
+        ])
 
-    if not hits:
-        return pd.DataFrame(
-            columns=[
-                "algorithm",
-                "bicluster_id",
-                "GO_ID",
-                "term",
-                "p_FDR",
-                "study_hits",
-                "pop_hits",
-            ]
-        )
-
-    return (
-        pd.DataFrame(hits)
-        .sort_values(["algorithm", "bicluster_id", "p_FDR"])
-        .reset_index(drop=True)
-    )
+    return (pd.DataFrame(rows)
+              .sort_values(["algorithm", "bicluster_id", "p_FDR"])
+              .reset_index(drop=True))
