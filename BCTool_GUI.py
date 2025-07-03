@@ -1,5 +1,10 @@
 import streamlit as st
 import pandas as pd
+from LAS_algorithm import las_with_significance
+from Chen_Church_algorithm import run_chen_church
+from Bivisu_algorithm import bivisu
+from ISA_algorithm import ISA_multi_seed
+from OPSM_algorithm import run_opsm
 from GO_assessment import go_assessment
 from adapter import ALL_ALGOS, Bicluster
 def _matrix_uploader():

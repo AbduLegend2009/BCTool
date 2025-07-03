@@ -5,3 +5,4 @@ import ISA_algorithm
 import OPSM_algorithm
 import BCTool_GUI
 from BCTool_GUI import upload_matrix
+from goatools.base import download_go_basic_obo, download_ncbi_associations
