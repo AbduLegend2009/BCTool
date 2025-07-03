@@ -1,27 +1,12 @@
 import streamlit as st
 import pandas as pd
-from LAS_algorithm import las_with_significance
-from Chen_Church_algorithm import run_chen_church
-from Bivisu_algorithm import bivisu
-from ISA_algorithm import ISA_multi_seed
-from OPSM_algorithm import run_opsm
-from GO_assessment import go_assessment
-from adapter import ALL_ALGOS, Bicluster
-def _matrix_uploader():
-    uploaded = st.sidebar.file_uploader(
-        "Upload expression matrix",
-        type=["csv", "tsv", "txt", "xls", "xlsx"],
-        help="Rows = genes, columns = conditions; first column will be treated as gene IDs",
-    )
-    if not uploaded:
-        return None
-    try:
-        df = load_matrix(uploaded)
-    except Exception as err:
-        st.sidebar.error(f"❌ {err}")
-        return None
-    st.sidebar.success(f"✓ Loaded **{uploaded.name}**  →  shape {df.shape[0]}×{df.shape[1]}")
-    return df
+import numpy as np
+from GO_assessment import go_assessment  # side‑effects only
+from adapter import ALL_ALGOS
+
+# ────────────────────────────────────────────────────────────
+# Single universal loader  ➜  one function to rule them all
+# ────────────────────────────────────────────────────────────
 
 def load_matrix(file_obj):
     """Return a numeric *genes × conditions* DataFrame from a CSV/TSV/TXT/Excel.
@@ -56,6 +41,28 @@ def load_matrix(file_obj):
 
     df.index = df.index.astype(str)  # gene IDs as strings
     return df
+
+# ────────────────────────────────────────────────────────────
+# Streamlit helpers
+# ────────────────────────────────────────────────────────────
+
+def _matrix_uploader():
+    uploaded = st.sidebar.file_uploader(
+        "Upload expression matrix",
+        type=["csv", "tsv", "txt", "xls", "xlsx"],
+        help="Rows = genes, columns = conditions; first column will be treated as gene IDs",
+    )
+    if not uploaded:
+        return None
+    try:
+        df = load_matrix(uploaded)
+    except Exception as err:
+        st.sidebar.error(f"❌ {err}")
+        return None
+    st.sidebar.success(f"✓ Loaded **{uploaded.name}**  →  shape {df.shape[0]}×{df.shape[1]}")
+    return df
+
+
 def run_biclusters():
     st.title("BCTool – Streamlit prototype")
 
@@ -75,8 +82,7 @@ def run_biclusters():
         with st.spinner("Running biclustering algorithms…"):
             results = {}
             for name in chosen:
-                model = ALL_ALGOS[name]()
-                biclusters = model.fit_transform(df.values)
+                biclusters = ALL_ALGOS[name](df.values)
                 results[name] = biclusters
         st.success("Finished!")
 
@@ -91,4 +97,3 @@ def run_biclusters():
 
 if __name__ == "__main__":
     run_biclusters()
-
