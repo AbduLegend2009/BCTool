@@ -31,7 +31,7 @@ from goatools.goea.go_enrichment_ns import GOEnrichmentStudyNS
 def _init_goea(taxid: int, gene_ids: tuple[str, ...]) -> GOEnrichmentStudyNS:  # type: ignore[name-defined]
     """Download GO files (once) and return a GOEnrichmentStudyNS."""
     obo_path = Path(download_go_basic_obo())
-    gene2go_path = Path(download_ncbi_associations(taxid))
+    gene2go_path = Path(download_ncbi_associations())
 
     obodag = GODag(obo_path)
 
