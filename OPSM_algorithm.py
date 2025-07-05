@@ -10,11 +10,9 @@ Greedy OPSM (Order-Preserving Sub-Matrix) search.
 
 Author: you & ChatGPT, 2025-06-30
 """
-from __future__ import annotations
-
 import argparse
 import random
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Optional
 
 import numpy as np
 
@@ -24,7 +22,7 @@ import numpy as np
 # ────────────────────────────────────────────────────────────
 def pick_seed_column(n_cols: int, rng: random.Random) -> int:
     """Return a random column index in 0…n_cols-1."""
-    return rng.randint(0, n_cols - 1)  # inclusive
+    return rng.randint(0, n_cols - 1)
 
 
 def score_submatrix(
@@ -35,15 +33,8 @@ def score_submatrix(
     """
     Count how many `row_mask==True` rows are *strictly increasing*
     across the ordered columns in `cols`.
-
-    Returns
-    -------
-    support : int
-        Number of surviving rows.
-    survives : np.ndarray[bool]
-        New Boolean mask the same length as rows.
     """
-    sub = X[row_mask][:, cols]  # shrink to alive rows, chosen columns
+    sub = X[row_mask][:, cols]
     survives = (np.diff(sub, axis=1) > 0).all(axis=1)
     return int(survives.sum()), survives
 
@@ -53,28 +44,12 @@ def score_submatrix(
 # ────────────────────────────────────────────────────────────
 def greedy_expand(
     X: np.ndarray,
-    k: int | None = None,
-    rng: random.Random | None = None,
+    k: Optional[int] = None,
+    rng: Optional[random.Random] = None,
 ) -> Tuple[np.ndarray, list[int]]:
     """
     Grow a column permutation one step at a time, keeping the column
     that leaves the largest survivor pool.
-
-    Parameters
-    ----------
-    X : np.ndarray
-        Data matrix (rows × columns).
-    k : int | None
-        Maximum columns to keep.  None = grow until no column helps.
-    rng : random.Random | None
-        Random-number generator (so caller can control seeding).
-
-    Returns
-    -------
-    surviving_rows : np.ndarray[int]
-        Indices of rows that remain in the final pattern.
-    cols : list[int]
-        Ordered column indices of the OPSM found in this run.
     """
     if rng is None:
         rng = random.Random()
@@ -82,9 +57,9 @@ def greedy_expand(
     n_cols = X.shape[1]
     seed_col = pick_seed_column(n_cols, rng)
 
-    cols: list[int] = [seed_col]                       # permutation so far
-    row_mask = np.ones(X.shape[0], dtype=bool)         # everyone alive
-    best_support = row_mask.sum()                      # m rows
+    cols: list[int] = [seed_col]
+    row_mask = np.ones(X.shape[0], dtype=bool)
+    best_support = row_mask.sum()
 
     while k is None or len(cols) < k:
         best_gain = -1
@@ -102,12 +77,13 @@ def greedy_expand(
                 best_col = c
                 best_row_mask = survives
 
-        # no column improves (or even matches) → stop
         if best_gain <= 0 or best_col is None:
             break
 
         cols.append(best_col)
-        row_mask[row_mask] = best_row_mask  # shrink alive set **in-place**
+        row_indices = np.where(row_mask)[0]
+        row_mask[:] = False
+        row_mask[row_indices[best_row_mask]] = True
         best_support += best_gain
 
     surviving_rows = np.where(row_mask)[0]
@@ -119,21 +95,16 @@ def greedy_expand(
 # ────────────────────────────────────────────────────────────
 def run_opsm(
     X: np.ndarray,
-    k: int | None = None,
+    k: Optional[int] = None,
     restarts: int = 10,
-    seed: int | None = None,
+    seed: Optional[int] = None,
 ) -> Tuple[np.ndarray, list[int]]:
     """
     Run greedy OPSM `restarts` times from different seeds; keep the best pattern.
-
-    Returns
-    -------
-    best_rows : np.ndarray[int]
-    best_cols : list[int]
     """
     global_rng = random.Random(seed)
-    best_rows: np.ndarray | None = None
-    best_cols: list[int] | None = None
+    best_rows: Optional[np.ndarray] = None
+    best_cols: Optional[list[int]] = None
     best_score = -1
 
     for _ in range(restarts):
@@ -151,22 +122,28 @@ def run_opsm(
 # tiny CLI / demo
 # ────────────────────────────────────────────────────────────
 def _demo():
-    rng = np.random.default_rng(0)
-    X = rng.normal(size=(20, 10))  # 20 × 10 random matrix
-    rows, cols = run_opsm(X, k=None, restarts=5, seed=0)
+    seed = 0
+    rng = np.random.default_rng(seed)
+    random.seed(seed)  # ensure consistency with random module
+    X = rng.normal(size=(20, 10))
+    rows, cols = run_opsm(X, k=None, restarts=5, seed=seed)
     print("Survivors :", rows.size)
     print("Row idxs  :", rows)
     print("Col order :", cols)
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Greedy OPSM search")
-    p.add_argument("file", nargs="?", help="CSV file (rows × cols) to load")
-    p.add_argument("-k", type=int, default=None, help="max columns to keep")
-    p.add_argument("--restarts", type=int, default=10, help="# random restarts")
-    p.add_argument("--seed", type=int, default=None, help="RNG seed")
-    p.add_argument("--demo", action="store_true", help="run built-in demo")
-    return p.parse_args()
+    parser = argparse.ArgumentParser(description="Greedy OPSM search")
+    parser.add_argument("file", nargs="?",
+                        help="CSV file (rows × cols) to load")
+    parser.add_argument("-k", type=int, default=None,
+                        help="max columns to keep")
+    parser.add_argument("--restarts", type=int, default=10,
+                        help="# random restarts")
+    parser.add_argument("--seed", type=int, default=None, help="RNG seed")
+    parser.add_argument("--demo", action="store_true",
+                        help="run built-in demo")
+    return parser.parse_args()
 
 
 def _load_csv(path: str) -> np.ndarray:
@@ -184,14 +161,4 @@ def main() -> None:
         raise SystemExit("Error: must pass a CSV file or use --demo")
 
     X = _load_csv(args.file)
-    rows, cols = run_opsm(X, k=args.k, restarts=args.restarts, seed=args.seed)
-
-    print("Rows surviving:", rows.size)
-    print("Row indices   :", rows)
-    print("Column order  :", cols)
-
-
-if __name__ == "__main__":
-    main()
-
-
+    rows, cols = run_opsm(X, k=args.k, restarts=args.restarts, seed=args.s_
