@@ -10,16 +10,18 @@ Greedy OPSM (Order-Preserving Sub-Matrix) search.
 
 Author: you & ChatGPT, 2025-06-30
 """
+
 import argparse
 import random
 from typing import Sequence, Tuple, Optional
 
 import numpy as np
 
-
 # ────────────────────────────────────────────────────────────
 # basic helpers
 # ────────────────────────────────────────────────────────────
+
+
 def pick_seed_column(n_cols: int, rng: random.Random) -> int:
     """Return a random column index in 0…n_cols-1."""
     return rng.randint(0, n_cols - 1)
@@ -38,10 +40,11 @@ def score_submatrix(
     survives = (np.diff(sub, axis=1) > 0).all(axis=1)
     return int(survives.sum()), survives
 
-
 # ────────────────────────────────────────────────────────────
 # greedy grower for **one** seed
 # ────────────────────────────────────────────────────────────
+
+
 def greedy_expand(
     X: np.ndarray,
     k: Optional[int] = None,
@@ -89,10 +92,11 @@ def greedy_expand(
     surviving_rows = np.where(row_mask)[0]
     return surviving_rows, cols
 
-
 # ────────────────────────────────────────────────────────────
 # public API with multiple restarts
 # ────────────────────────────────────────────────────────────
+
+
 def run_opsm(
     X: np.ndarray,
     k: Optional[int] = None,
@@ -117,10 +121,11 @@ def run_opsm(
     assert best_rows is not None and best_cols is not None
     return best_rows, best_cols
 
-
 # ────────────────────────────────────────────────────────────
 # tiny CLI / demo
 # ────────────────────────────────────────────────────────────
+
+
 def _demo():
     seed = 0
     rng = np.random.default_rng(seed)
@@ -161,4 +166,12 @@ def main() -> None:
         raise SystemExit("Error: must pass a CSV file or use --demo")
 
     X = _load_csv(args.file)
-    rows, cols = run_opsm(X, k=args.k, restarts=args.restarts, seed=args.s_
+    rows, cols = run_opsm(X, k=args.k, restarts=args.restarts, seed=args.seed)
+
+    print(f"Found OPSM with {rows.size} rows, {len(cols)} columns")
+    print("Row indices:", rows)
+    print("Column order:", cols)
+
+
+if __name__ == "__main__":
+    main()
