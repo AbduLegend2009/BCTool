@@ -2,6 +2,8 @@ from pathlib import Path
 import urllib.request
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
+from goatools.go_enrichment import GOEnrichmentStudy
+
 
 # Canonical GO data sources
 OBO_URL = "https://current.geneontology.org/ontology/go-basic.obo"
@@ -28,7 +30,18 @@ def get_associations(taxid:int):
     if not assoc:
         raise ValueError("No GO annotations—check taxid or ID type")
     return assoc
-human_assoc=get_associations(9606)
-print(len(human_assoc))
-print(human_assoc[7157])
+def init_goea(taxid, universe):
+    return GOEnrichmentStudy(
+        list(universe),
+        get_associations(taxid),
+        oboDAG,
+        methods=["fdr_bh"],
+        alpha=1.0,
+        propagate_counts=True
+    )
+def is_enriched(genes, goea, p_cut):
+    if len(genes)<2:
+        return False
+    results = goea.run_study(genes)
+    return any(r.p_fdr_bh < p_cut for r in results)
 
