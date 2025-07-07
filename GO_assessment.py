@@ -4,6 +4,7 @@ from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
 from goatools.go_enrichment import GOEnrichmentStudy
 from collections import OrderedDict
+import research_gui
 
 
 # Canonical GO data sources
@@ -24,13 +25,14 @@ def ensure_file(url: str, local_name: str) -> Path:
 OBO = ensure_file(OBO_URL, "go-basic.obo")
 G2G = ensure_file(G2G_URL, "gene2go.gz")
 
-oboDAG = GODag(str(OBO))
+oboDAG = GODag(OBO)
 
 def get_associations(taxid:int):
     assoc=read_ncbi_gene2go(str(G2G), taxids=[taxid])
     if not assoc:
         raise ValueError("No GO annotations—check taxid or ID type")
     return assoc
+
 def init_goea(taxid, universe):
     return GOEnrichmentStudy(
         list(universe),
