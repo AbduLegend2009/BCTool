@@ -12,7 +12,7 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from adapter import ALL_ALGOS
-from GO_assessment import go_assessment
+from GO_assessment import go_assessment, OBO, G2G
 from hcl_parser import HCLParser
 
 
@@ -321,11 +321,46 @@ class GeneExpressionGUI:
                     print(f"Error running {algo_name}: {e}")
                     self.biclusters[algo_name] = []
 
+            # Prompt for taxonomy ID
+            def ask_taxid():
+                taxid = tk.simpledialog.askstring(
+                    "Taxonomy ID",
+                    "Enter NCBI Taxonomy ID for your organism (e.g., 9606 for human):",
+                    initialvalue="9606"
+                )
+                if taxid is None or not taxid.strip().isdigit():
+                    return 9606  # Default to human
+                return int(taxid.strip())
+
+            # Ask for taxid in main thread
+            taxid = [9606]
+            event = threading.Event()
+            def get_taxid():
+                taxid[0] = ask_taxid()
+                event.set()
+            self.root.after(0, get_taxid)
+            event.wait()
+
+            # Prepare biclusters and universe for GO_assessment
+            # Flatten all biclusters from all algorithms into a list of lists of gene indices
+            all_biclusters = []
+            for algo_bics in self.biclusters.values():
+                for bic in algo_bics:
+                    # Convert .rows to list of gene indices (as integers or as gene IDs)
+                    # If expression_data.index is gene names, map indices to names
+                    if hasattr(self.expression_data, 'index'):
+                        genes = [self.expression_data.index[i] for i in bic.rows]
+                    else:
+                        genes = list(bic.rows)
+                    all_biclusters.append(genes)
+            # Universe is all gene IDs in the data
+            universe = set(self.expression_data.index)
+
             # Run GO enrichment analysis
             self.progress_var.set("Running GO enrichment analysis...")
             try:
                 self.go_results = go_assessment(
-                    self.biclusters, self.expression_data.index)
+                    taxid[0], all_biclusters, universe, OBO=OBO, G2G=G2G)
             except Exception as e:
                 print(f"Error in GO analysis: {e}")
                 self.go_results = None
