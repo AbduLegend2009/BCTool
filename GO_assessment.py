@@ -3,6 +3,7 @@ import urllib.request
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
 from goatools.go_enrichment import GOEnrichmentStudy
+from collections import OrderedDict
 
 
 # Canonical GO data sources
@@ -44,4 +45,17 @@ def is_enriched(genes, goea, p_cut):
         return False
     results = goea.run_study(genes)
     return any(r.p_fdr_bh < p_cut for r in results)
-
+def go_assessment(taxid: int,
+                   biclusters: list[list[int]], 
+                   universe: set[int], 
+                   p_vals=(0.05,0.01,0.001),
+                   OBO,
+                   G2G):
+    goea = init_goea(taxid,universe)
+    enriched_flags = {th: 0 for th in p_vals}
+    for bic in biclusters:
+        for th in p_vals:
+            if is_enriched(bic, goea, th):
+                enriched_flags[th] += 1
+    total = len(biclusters)
+    return OrderedDict((th, enriched_flags[th] / total) for th in pvals)
