@@ -2,7 +2,7 @@ from xml.etree.ElementPath import ops
 import streamlit as st
 import pandas as pd
 import io, numpy as np
-import GO_assessment
+from GO_assessment import go_assessment
 import adapter
 
 def uploaded_data(data):
@@ -32,6 +32,7 @@ def main():
     with st.sidebar:
         st.header("Customization")
         matrix, gene_ids = uploaded_data(data)
+        taxid = st.number_input("What is the taxonomy identifier?")
         sel_alg = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in sel_alg:
             st.header("LAS")
@@ -60,18 +61,28 @@ def main():
             min_genes_Bivisu = st.number_input("What is the lowest number of genes per bicluster?")
             min_cond_Bivisu = st.number_input("What is the lowest number of conditions per bicluster?")
         if st.button("Run algorithms 🚀"):
+            s = []
             for _ in sel_alg:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(matrix, max_iter_LAS, alpha_LAS)
+                    s.append(["LAS",LAS])
                 elif _ == "Chen and Church":
                     Chen_and_Church = adapter.wrap_church(matrix, delta_C_C, max_bi_C_C)
+                    s.append("Chen_and_Church", Chen_and_Church)
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(matrix, n_seeds_ISA, seed_size_ISA, t_g_ISA, t_c_ISA)
+                    s.append("ISA", ISA)
                 elif _ == "OPSM":
                     ops == adapter.wrap_opsm(matrix, k_OPSM, restarts_OPSM)
+                    s.append("OPSM", ops)
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
-                    
+                    s.append("Bivisu", Bi)
+    for sub in s:
+        
+
+
+
 
  
 
