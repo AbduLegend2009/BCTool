@@ -1,4 +1,3 @@
-from xml.etree.ElementPath import ops
 import streamlit as st
 import pandas as pd
 import io, numpy as np
@@ -25,6 +24,28 @@ def uploaded_data(data):
     return matrix, gene_ids
 
 algorithms = ["LAS", "Chen and Church", "ISA", "OPSM", "Bivisu"]
+
+
+def summarize_biclusters(bic_dict, gene_ids):
+    """
+    bic_dict : {"LAS": [Bicluster,…], "ISA": …}
+    gene_ids : list[str]  – index → gene symbol
+    returns   : pd.DataFrame
+    """
+    rows = []
+    for alg, bics in bic_dict.items():
+        for i, bic in enumerate(bics):
+            rows.append({
+                "ID"       : f"{alg}_{i}",
+                "Algorithm": alg,
+                "Rows"     : len(bic.rows),
+                "Cols"     : len(bic.cols),
+                "Genes"    : ", ".join(gene_ids[j] for j in bic.rows[:3]) + " …",
+                "Score"    : getattr(bic, "score", np.nan),   # not all wrappers set score
+            })
+    return pd.DataFrame(rows)
+
+
 
 def main():
     st.title("BCTool 🧬")
@@ -61,25 +82,32 @@ def main():
             min_genes_Bivisu = st.number_input("What is the lowest number of genes per bicluster?")
             min_cond_Bivisu = st.number_input("What is the lowest number of conditions per bicluster?")
         if st.button("Run algorithms 🚀"):
+            if not sel_alg:
+                st.error("No algorithms found. Please ensure that algorithms are available.")
+                st.stop()
             s = []
             for _ in sel_alg:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(matrix, max_iter_LAS, alpha_LAS)
                     s.append(["LAS",LAS])
                 elif _ == "Chen and Church":
-                    Chen_and_Church = adapter.wrap_church(matrix, delta_C_C, max_bi_C_C)
-                    s.append("Chen_and_Church", Chen_and_Church)
+                    Chen_and_Church = adapter.wrap_church(matrix, delta_C_C, delta_C_C, max_bi_C_C)
+                    s.append(["Chen_and_Church", Chen_and_Church])
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(matrix, n_seeds_ISA, seed_size_ISA, t_g_ISA, t_c_ISA)
-                    s.append("ISA", ISA)
+                    s.append(["ISA", ISA])
                 elif _ == "OPSM":
-                    ops == adapter.wrap_opsm(matrix, k_OPSM, restarts_OPSM)
-                    s.append("OPSM", ops)
+                    opsm = adapter.wrap_opsm(matrix, k_OPSM, restarts_OPSM)
+                    s.append(["OPSM", opsm])
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
-                    s.append("Bivisu", Bi)
+                    s.append(["Bivisu", Bi])
+            st.session_state["Biclusters"] = s
     for sub in s:
-        
+        st.write(f"{sub[0]}\n{summarise_biclusters(sub[1], gene_ids)}")
+    
+
+
 
 
 
