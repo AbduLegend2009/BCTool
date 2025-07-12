@@ -26,23 +26,39 @@ def uploaded_data(data):
 algorithms = ["LAS", "Chen and Church", "ISA", "OPSM", "Bivisu"]
 
 
-def summarize_biclusters(bic_dict, gene_ids):
+def summarize_biclusters(bics, gene_ids, alg_name=None):
+    """Create a summary ``DataFrame`` from biclustering results.
+
+    Parameters
+    ----------
+    bics : list | dict
+        Either a list of ``Bicluster`` objects from a single algorithm or a
+        dictionary mapping algorithm names to such lists.
+    gene_ids : list[str]
+        Mapping of row indices to gene identifiers.
+    alg_name : str | None
+        Optional algorithm name when ``bics`` is a plain list.
     """
-    bic_dict : {"LAS": [Bicluster,…], "ISA": …}
-    gene_ids : list[str]  – index → gene symbol
-    returns   : pd.DataFrame
-    """
+
     rows = []
-    for alg, bics in bic_dict.items():
-        for i, bic in enumerate(bics):
+
+    def _append_rows(bic_list, alg):
+        for i, bic in enumerate(bic_list):
             rows.append({
-                "ID"       : f"{alg}_{i}",
+                "ID": f"{alg}_{i}",
                 "Algorithm": alg,
-                "Rows"     : len(bic.rows),
-                "Cols"     : len(bic.cols),
-                "Genes"    : ", ".join(gene_ids[j] for j in bic.rows[:3]) + " …",
-                "Score"    : getattr(bic, "score", np.nan),   # not all wrappers set score
+                "Rows": len(bic.rows),
+                "Cols": len(bic.cols),
+                "Genes": ", ".join(gene_ids[j] for j in bic.rows[:3]) + " …",
+                "Score": getattr(bic, "score", np.nan),
             })
+
+    if isinstance(bics, dict):
+        for alg, bic_list in bics.items():
+            _append_rows(bic_list, alg)
+    else:
+        _append_rows(bics, alg_name or "")
+
     return pd.DataFrame(rows)
 
 
@@ -104,7 +120,9 @@ def main():
                     s.append(["Bivisu", Bi])
             st.session_state["Biclusters"] = s
     for sub in s:
-        st.write(f"{sub[0]}\n{summarise_biclusters(sub[1], gene_ids)}")
+        st.write(
+            f"{sub[0]}\n{summarize_biclusters(sub[1], gene_ids, sub[0])}"
+        )
     
 
 
