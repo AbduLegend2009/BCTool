@@ -120,9 +120,21 @@ def main():
                     s.append(["Bivisu", Bi])
             st.session_state["Biclusters"] = s
     for sub in s:
-        st.write(
-            f"{sub[0]}\n{summarize_biclusters(sub[1], gene_ids, sub[0])}"
-        )
+        st.header(f"{sub[0]}")
+        st.write(f"{summarize_biclusters(sub[1], gene_ids, sub[0])}")
+        if sub[0] == "LAS":
+            las = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+        elif sub[0] == "Chen_and_Church":
+            Chen = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+        elif sub[0] == "ISA":
+            isa = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+        elif sub[0] == "OPSM":
+            op = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+        elif sub[0] == "Bivisu":
+            bi = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+        
+    
+        
     
 
 
