@@ -119,9 +119,11 @@ def main():
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
                     s.append(["Bivisu", Bi])
             st.session_state["Biclusters"] = s
+    universe = set(gene_ids)
     for sub in s:
         st.header(f"{sub[0]}")
-        st.write(f"{summarize_biclusters(sub[1], gene_ids, sub[0])}")
+        st.write("Biclusters:")
+        st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
         if sub[0] == "LAS":
             las = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
         elif sub[0] == "Chen_and_Church":
