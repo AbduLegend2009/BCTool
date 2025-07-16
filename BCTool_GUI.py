@@ -3,6 +3,7 @@ import pandas as pd
 import io, numpy as np
 from GO_assessment import go_assessment
 import adapter
+import matplotlib.pyplot as plt
 
 def uploaded_data(data):
     if data is None:
@@ -120,22 +121,30 @@ def main():
                     s.append(["Bivisu", Bi])
             st.session_state["Biclusters"] = s
     universe = set(gene_ids)
+    k = []
     for sub in s:
         st.header(f"{sub[0]}")
         st.write("Biclusters:")
         st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
         if sub[0] == "LAS":
             las = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+            k.append([sub[0], las])
         elif sub[0] == "Chen_and_Church":
             Chen = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+            k.append([sub[0], Chen])
         elif sub[0] == "ISA":
             isa = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+            k.append([sub[0], isa])
         elif sub[0] == "OPSM":
             op = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+            k.append([sub[0], op])
         elif sub[0] == "Bivisu":
             bi = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-        
-    
+            k.append([sub[0], bi])
+    fig, ax = plt.subplots()
+    ax.hist([k[i][1] for i in len(k)], bins=len(k), edgecolor="white")
+    ax.set_xlabel("Algorithm/s")
+    ax.set_ylabel("Percentage of enriched biclusters")
         
     
 
