@@ -119,12 +119,11 @@ def main():
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
                     s.append(["Bivisu", Bi])
-            st.session_state["Biclusters"] = s
     if gene_ids is None:
         st.stop()
     universe = set(gene_ids)
     k = []
-    for sub in st.session_state["Biclusters"]:
+    for sub in s:
         st.header(f"{sub[0]}")
         st.write("Biclusters:")
         st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
