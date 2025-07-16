@@ -122,7 +122,7 @@ def main():
             st.session_state["Biclusters"] = s
     universe = set(gene_ids)
     k = []
-    for sub in s:
+    for sub in st.session_state["Biclusters"]:
         st.header(f"{sub[0]}")
         st.write("Biclusters:")
         st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
@@ -146,18 +146,5 @@ def main():
     ax.set_xlabel("Algorithm/s")
     ax.set_ylabel("Percentage of enriched biclusters")
         
-    
-
-
-
-
-
-
- 
-
-    
-
-
-
 if __name__=="__main__":
     main()
