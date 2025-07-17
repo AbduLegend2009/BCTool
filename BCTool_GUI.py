@@ -119,34 +119,30 @@ def main():
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
                     s.append(["Bivisu", Bi])
-    st.session_state["Biclusters"] = s
-    if gene_ids is None:
-        st.stop()
-    universe = set(gene_ids)
-    k = []
-    for sub in st.session_state["Biclusters"]:
-        st.header(f"{sub[0]}")
-        st.write("Biclusters:")
-        st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
-        if sub[0] == "LAS":
-            las = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-            k.append([sub[0], las])
-        elif sub[0] == "Chen_and_Church":
-            Chen = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-            k.append([sub[0], Chen])
-        elif sub[0] == "ISA":
-            isa = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-            k.append([sub[0], isa])
-        elif sub[0] == "OPSM":
-            op = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-            k.append([sub[0], op])
-        elif sub[0] == "Bivisu":
-            bi = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-            k.append([sub[0], bi])
-    fig, ax = plt.subplots()
-    ax.hist([k[i][1] for i in len(k)], bins=len(k), edgecolor="white")
-    ax.set_xlabel("Algorithm/s")
-    ax.set_ylabel("Percentage of enriched biclusters")
-        
+
+            st.session_state["Biclusters"] = s
+
+    if "Biclusters" in st.session_state and matrix is not None:
+        gene_universe = set(gene_ids)
+        p_vals = (0.05, 0.01, 0.001)
+        all_enrich = []
+        for sub in st.session_state["Biclusters"]:
+            st.header(f"{sub[0]}")
+            st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
+
+            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in sub[1]]
+            enrich = go_assessment(taxid, bic_gene_lists, gene_universe,
+                                   p_vals=p_vals)
+
+            row = {"Algorithm": sub[0]}
+            for pv in p_vals:
+                row[str(pv)] = 100 * enrich[pv]
+            all_enrich.append(row)
+
+        if all_enrich:
+            enrich_df = pd.DataFrame(all_enrich).set_index("Algorithm")
+            enrich_df = enrich_df[[str(p) for p in p_vals]]
+            st.bar_chart(enrich_df)
+
 if __name__=="__main__":
     main()
