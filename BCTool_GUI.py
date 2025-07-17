@@ -119,19 +119,21 @@ def main():
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
                     s.append(["Bivisu", Bi])
             st.session_state["Biclusters"] = s
-    for sub in s:
-        st.header(f"{sub[0]}")
-        st.write(f"{summarize_biclusters(sub[1], gene_ids, sub[0])}")
-        if sub[0] == "LAS":
-            las = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-        elif sub[0] == "Chen_and_Church":
-            Chen = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-        elif sub[0] == "ISA":
-            isa = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-        elif sub[0] == "OPSM":
-            op = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
-        elif sub[0] == "Bivisu":
-            bi = go_assessment(taxid, sub[1], matrix, p_vals=(0.05,0.01,0.001))
+
+    if "Biclusters" in st.session_state and matrix is not None:
+        gene_universe = set(gene_ids)
+        for sub in st.session_state["Biclusters"]:
+            st.header(f"{sub[0]}")
+            st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
+
+            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in sub[1]]
+            enrich = go_assessment(taxid, bic_gene_lists, gene_universe,
+                                   p_vals=(0.05, 0.01, 0.001))
+            enrich_df = pd.DataFrame({
+                "p-value": list(enrich.keys()),
+                "Enriched (%)": [100 * v for v in enrich.values()],
+            })
+            st.bar_chart(enrich_df.set_index("p-value"))
         
     
         
