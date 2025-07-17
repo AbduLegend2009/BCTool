@@ -3,6 +3,7 @@ import pandas as pd
 import io, numpy as np
 from GO_assessment import go_assessment
 import adapter
+import matplotlib.pyplot as plt
 
 def uploaded_data(data):
     if data is None:
@@ -118,6 +119,7 @@ def main():
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
                     s.append(["Bivisu", Bi])
+
             st.session_state["Biclusters"] = s
 
     if "Biclusters" in st.session_state and matrix is not None:
@@ -141,21 +143,6 @@ def main():
             enrich_df = pd.DataFrame(all_enrich).set_index("Algorithm")
             enrich_df = enrich_df[[str(p) for p in p_vals]]
             st.bar_chart(enrich_df)
-        
-    
-        
-    
-
-
-
-
-
-
- 
-
-    
-
-
 
 if __name__=="__main__":
     main()
