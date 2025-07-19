@@ -98,6 +98,8 @@ scipy >= 1.7.0
 
 openpyxl >= 3.0.0
 
+goatools >= 1.4
+
 
 
 
