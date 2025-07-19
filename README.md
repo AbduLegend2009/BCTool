@@ -286,6 +286,18 @@ Run algorithms separately to manage memory usage
 Consider systems with higher RAM capacity
 
 
+🧪 Running Tests
+----------------
+
+The repository includes a small test suite powered by `pytest`.
+After installing the dependencies you can run all tests with:
+
+```bash
+pip install -r requirements.txt pytest
+pytest
+```
+
+
 
 👍 Contributing to BCTool
 
