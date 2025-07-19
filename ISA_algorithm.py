@@ -1,7 +1,6 @@
 
 from __future__ import annotations
-import logging
-from typing import List, Tuple, Dict, Optional, Literal
+from typing import List, Dict
 # We use NumPy for easy handling of numeric arrays (matrices).
 import numpy as np  # import numpy for use
 __all__ = [
@@ -37,16 +36,21 @@ def ISA_single_seed(X: np.array, t_g, t_c, seed_size=5, max_iter=100):
         gene_scores_mean = gene_scores.mean()
         # We need to find the standard deviation of the gene_scores to find the z_score
         gene_scores_standard_deviation = gene_scores.std()
-        # If the standard deviation is 0, then all of the values are the same (and the mean thus the same as all the values). Furthermore, the z_scores would all be 0 as the formula for z_scores is (gene_scores-gene_scores_mean)/gene_scores_standard_deviation
+        # If the standard deviation is 0, then all of the values are the same
+        # (and the mean thus the same as all the values). Furthermore, the
+        # z_scores would all be 0 as the formula for z_scores is
+        # (gene_scores-gene_scores_mean)/gene_scores_standard_deviation
         if gene_scores_standard_deviation == 0:
             gene_scores_z_scores = np.zeros_like(gene_scores)
         # Otherwise, we calculate the z_scores normally
         else:
             gene_scores_z_scores = (
                 gene_scores-gene_scores_mean)/gene_scores_standard_deviation
-        # We now create an array that is full of 1s and 0s to see which genes have been selected because they passed the gene z_score threshold
+        # We now create an array that is full of 1s and 0s to see which genes
+        # have been selected because they passed the gene z_score threshold
         s_g_new = (gene_scores_z_scores >= t_g).astype(int)
-        # X.T changes the way the data is viewed: prelimenarily it was (n_genes,m_conditions), but it is (m_condition,n_genes now)
+        # X.T changes the way the data is viewed: it was (n_genes,m_conditions),
+        # but is now (m_condition,n_genes)
         condition_scores = X.T.dot(s_g_new)
         k = s_g_new.sum()
         k = max(k, 1)

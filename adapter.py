@@ -68,7 +68,14 @@ def wrap_church(X: np.ndarray, *, delta: float = 0.6, alpha: float = 0.05, max_b
 # ISA adapter
 # ---------------------------------------------------------------------------
 
-def wrap_isa(X: np.ndarray, *, n_seeds: int = 500, seed_size: int = 5, t_g: float = 2.0, t_c: float = 2.0) -> List[Bicluster]:
+def wrap_isa(
+    X: np.ndarray,
+    *,
+    n_seeds: int = 500,
+    seed_size: int = 5,
+    t_g: float = 2.0,
+    t_c: float = 2.0,
+) -> List[Bicluster]:
     mods = ISA_multi_seed(X, n_seeds=n_seeds, seed_size=seed_size, t_g=t_g, t_c=t_c)
     out: List[Bicluster] = []
     for m in mods:
@@ -89,7 +96,16 @@ def wrap_opsm(X: np.ndarray, *, k: int | None = None, restarts: int = 10) -> Lis
 # BiVisu adapter
 # ---------------------------------------------------------------------------
 
-def wrap_bivisu(X: np.ndarray, *, model: str = "auto", eps: float = 0.3, thr: float = 0.05, min_rows: int = 5, min_cols: int = 2, max_iters: int = 5) -> List[Bicluster]:
+def wrap_bivisu(
+    X: np.ndarray,
+    *,
+    model: str = "auto",
+    eps: float = 0.3,
+    thr: float = 0.05,
+    min_rows: int = 5,
+    min_cols: int = 2,
+    max_iters: int = 5,
+) -> List[Bicluster]:
     bics = bivisu(X, model=model, eps=eps, thr=thr, min_rows=min_rows, min_cols=min_cols, max_iters=max_iters)
     out: List[Bicluster] = []
     for rows, cols in bics:

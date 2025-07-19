@@ -7,7 +7,6 @@ def las_with_significance(test_array, testarray_rows, testarray_cols, max_iter=1
    
     #variables
     num_rows = testarray_rows
-    num_columns = testarray_cols
     standard_deviation = test_array.std()
     array_mean = test_array.mean()
     alpha_level = alpha
