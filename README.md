@@ -72,16 +72,15 @@ pip package manager
 
 Quick Start
 
-python launch_gui.py
-
-The launcher automatically installs required packages.
+pip install -r requirements.txt
+streamlit run BCTool_GUI.py
 
 
 
 Manual Setup
 
 pip install -r requirements.txt
-python gene_expression_gui.py
+streamlit run BCTool_GUI.py
 
 Required Python Packages
 
@@ -109,7 +108,7 @@ openpyxl >= 3.0.0
 
 Launching
 
-python launch_gui.py
+streamlit run BCTool_GUI.py
 
 
 Loading Your Data
@@ -198,21 +197,19 @@ metadata {
 
 📁 Project Layout
 
-gene-expression-analyzer/
-├── gene_expression_gui.py       # Main GUI interface
-├── adapter.py                   # Algorithm adapters
-├── GO_assessment.py             # Gene Ontology analysis tools
-├── hcl_parser.py                # HCL file parser
-├── launch_gui.py                # Application launcher script
-├── requirements.txt             # Package dependencies
-├── sample_data.hcl              # Example HCL file
-├── README.md                    # This documentation
-└── algorithms/                  # Biclustering algorithm modules
-    ├── LAS_algorithm.py
-    ├── Chen_Church_algorithm.py
-    ├── ISA_algorithm.py
-    ├── OPSM_algorithm.py
-    └── Bivisu_algorithm.py
+BCTool/
+├── BCTool_GUI.py          # Streamlit interface
+├── adapter.py             # Algorithm adapters
+├── GO_assessment.py       # Gene Ontology tools
+├── LAS_algorithm.py
+├── Chen_Church_algorithm.py
+├── ISA_algorithm.py
+├── OPSM_algorithm.py
+├── Bivisu_algorithm.py
+├── requirements.txt
+├── go-basic.obo
+├── gene2go.gz
+└── README.md
 
 🛠️ Algorithms Included
 
@@ -268,7 +265,7 @@ Ensure internet connectivity for GO database downloads
 
 Additional Help
 
-python launch_gui.py --help
+streamlit run BCTool_GUI.py
 
 Check terminal messages for error details.
 
