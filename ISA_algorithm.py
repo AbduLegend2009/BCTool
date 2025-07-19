@@ -1,15 +1,14 @@
 
 from __future__ import annotations
 from typing import List, Dict
-# We use NumPy for easy handling of numeric arrays (matrices).
-import numpy as np  # import numpy for use
+import numpy as np
 __all__ = [
     "ISA_single_seed",
     "ISA_multi_seed",
 ]
 
 
-def ISA_single_seed(X: np.array, t_g, t_c, seed_size=5, max_iter=100):
+def ISA_single_seed(X: np.ndarray, t_g, t_c, seed_size=5, max_iter=100):
     # Determine rows and columns
     n_genes, m_conditions = X.shape
     if seed_size > m_conditions:

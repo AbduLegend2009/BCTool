@@ -41,16 +41,17 @@ def init_goea(taxid, universe):
         alpha=1.0,
         propagate_counts=True
     )
-def is_enriched(genes, goea, p_cut):
+def is_enriched(genes: list[str], goea, p_cut: float) -> bool:
     if len(genes)<2:
         return False
     results = goea.run_study(genes)
     return any(r.p_fdr_bh < p_cut for r in results)
-def go_assessment(taxid: int,
-                   biclusters: list[list[int]], 
-                   universe: set[int], 
-                   p_vals=(0.05,0.01,0.001),
-):
+def go_assessment(
+    taxid: int,
+    biclusters: list[list[str]],
+    universe: set[int],
+    p_vals=(0.05, 0.01, 0.001),
+) -> OrderedDict:
     goea = init_goea(taxid,universe)
     enriched_flags = {th: 0 for th in p_vals}
     for bic in biclusters:
