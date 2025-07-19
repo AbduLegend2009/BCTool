@@ -6,4 +6,3 @@ scikit-learn>=1.0.0
 scipy>=1.7.0
 openpyxl>=3.0.0
 streamlit>=1.15.0
-tkinter

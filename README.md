@@ -99,7 +99,7 @@ scipy >= 1.7.0
 
 openpyxl >= 3.0.0
 
-tkinter (included with most Python distributions)
+Tkinter must be available in your Python installation
 
 
 
