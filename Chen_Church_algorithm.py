@@ -147,7 +147,6 @@ def run_chen_church(
     max_biclusters: int = 100,
     random_state: int | None = None,
 ):
-    rng = np.random.default_rng(random_state)
     X_work = X.copy()
     biclusters: List[Tuple[np.ndarray, np.ndarray, float]] = []
 

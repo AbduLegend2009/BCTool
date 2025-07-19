@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import io, numpy as np
+import numpy as np
 from GO_assessment import go_assessment
 import adapter
-import matplotlib.pyplot as plt
 
 def uploaded_data(data):
     if data is None:
@@ -66,7 +65,10 @@ def summarize_biclusters(bics, gene_ids, alg_name=None):
 
 def main():
     st.title("BCTool 🧬")
-    data = st.file_uploader("Please upload expression matrix (CSV, TSV, or Excel)", type = ["csv", "tsv", "xls", "xlsx"])
+    data = st.file_uploader(
+        "Please upload expression matrix (CSV, TSV, or Excel)",
+        type=["csv", "tsv", "xls", "xlsx"],
+    )
     with st.sidebar:
         st.header("Customization")
         matrix, gene_ids = uploaded_data(data)
@@ -108,7 +110,12 @@ def main():
                     LAS = adapter.wrap_las(matrix, max_iter_LAS, alpha_LAS)
                     s.append(["LAS",LAS])
                 elif _ == "Chen and Church":
-                    Chen_and_Church = adapter.wrap_church(matrix, delta_C_C, delta_C_C, max_bi_C_C)
+                    Chen_and_Church = adapter.wrap_church(
+                        matrix,
+                        delta=delta_C_C,
+                        alpha=alpha_C_C,
+                        max_biclusters=max_bi_C_C,
+                    )
                     s.append(["Chen_and_Church", Chen_and_Church])
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(matrix, n_seeds_ISA, seed_size_ISA, t_g_ISA, t_c_ISA)
@@ -117,7 +124,14 @@ def main():
                     opsm = adapter.wrap_opsm(matrix, k_OPSM, restarts_OPSM)
                     s.append(["OPSM", opsm])
                 elif _ == "Bivisu":
-                    Bi = adapter.wrap_bivisu(matrix, model_Bivisu, eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
+                    Bi = adapter.wrap_bivisu(
+                        matrix,
+                        model_Bivisu,
+                        eps_Bivisu,
+                        msr_Bivisu,
+                        min_genes_Bivisu,
+                        min_cond_Bivisu,
+                    )
                     s.append(["Bivisu", Bi])
 
             st.session_state["Biclusters"] = s
