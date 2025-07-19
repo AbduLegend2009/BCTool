@@ -301,7 +301,7 @@ Update GUI options accordingly
 
 📜 License & Citation
 
-BCTool integrates multiple published algorithms under their respective licenses. Review individual files for licensing details.
+BCTool integrates multiple published algorithms under their respective licenses. The overall project is released under the [MIT License](LICENSE). Review individual files for licensing details.
 
 If you publish work utilizing BCTool, please acknowledge the source algorithms and Gene Ontology tools accordingly.
 
