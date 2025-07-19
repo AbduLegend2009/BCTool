@@ -107,7 +107,11 @@ def main():
             s = []
             for _ in sel_alg:
                 if _ == "LAS":
-                    LAS = adapter.wrap_las(matrix, max_iter_LAS, alpha_LAS)
+                    LAS = adapter.wrap_las(
+                        matrix,
+                        max_iter=max_iter_LAS,
+                        alpha=alpha_LAS,
+                    )
                     s.append(["LAS",LAS])
                 elif _ == "Chen and Church":
                     Chen_and_Church = adapter.wrap_church(
@@ -118,19 +122,29 @@ def main():
                     )
                     s.append(["Chen_and_Church", Chen_and_Church])
                 elif _ == "ISA":
-                    ISA = adapter.wrap_isa(matrix, n_seeds_ISA, seed_size_ISA, t_g_ISA, t_c_ISA)
+                    ISA = adapter.wrap_isa(
+                        matrix,
+                        n_seeds=n_seeds_ISA,
+                        seed_size=seed_size_ISA,
+                        t_g=t_g_ISA,
+                        t_c=t_c_ISA,
+                    )
                     s.append(["ISA", ISA])
                 elif _ == "OPSM":
-                    opsm = adapter.wrap_opsm(matrix, k_OPSM, restarts_OPSM)
+                    opsm = adapter.wrap_opsm(
+                        matrix,
+                        k=k_OPSM,
+                        restarts=restarts_OPSM,
+                    )
                     s.append(["OPSM", opsm])
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(
                         matrix,
-                        model_Bivisu,
-                        eps_Bivisu,
-                        msr_Bivisu,
-                        min_genes_Bivisu,
-                        min_cond_Bivisu,
+                        model=model_Bivisu,
+                        eps=eps_Bivisu,
+                        thr=msr_Bivisu,
+                        min_rows=min_genes_Bivisu,
+                        min_cols=min_cond_Bivisu,
                     )
                     s.append(["Bivisu", Bi])
 
