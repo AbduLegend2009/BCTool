@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from GO_assessment import go_assessment
+try:
+    from GO_assessment import go_assessment
+except Exception:  # pragma: no cover - optional dependency (goatools)
+    go_assessment = None
 import adapter
 
 def uploaded_data(data):
@@ -109,7 +112,7 @@ def main():
                 if _ == "LAS":
                     LAS = adapter.wrap_las(
                         matrix,
-                        max_iter=max_iter_LAS,
+                        max_iter=int(max_iter_LAS),
                         alpha=alpha_LAS,
                     )
                     s.append(["LAS",LAS])
@@ -118,14 +121,14 @@ def main():
                         matrix,
                         delta=delta_C_C,
                         alpha=alpha_C_C,
-                        max_biclusters=max_bi_C_C,
+                        max_biclusters=int(max_bi_C_C),
                     )
                     s.append(["Chen_and_Church", Chen_and_Church])
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(
                         matrix,
-                        n_seeds=n_seeds_ISA,
-                        seed_size=seed_size_ISA,
+                        n_seeds=int(n_seeds_ISA),
+                        seed_size=int(seed_size_ISA),
                         t_g=t_g_ISA,
                         t_c=t_c_ISA,
                     )
@@ -133,8 +136,8 @@ def main():
                 elif _ == "OPSM":
                     opsm = adapter.wrap_opsm(
                         matrix,
-                        k=k_OPSM,
-                        restarts=restarts_OPSM,
+                        k=int(k_OPSM) if k_OPSM else None,
+                        restarts=int(restarts_OPSM),
                     )
                     s.append(["OPSM", opsm])
                 elif _ == "Bivisu":
@@ -143,8 +146,8 @@ def main():
                         model=model_Bivisu,
                         eps=eps_Bivisu,
                         thr=msr_Bivisu,
-                        min_rows=min_genes_Bivisu,
-                        min_cols=min_cond_Bivisu,
+                        min_rows=int(min_genes_Bivisu),
+                        min_cols=int(min_cond_Bivisu),
                     )
                     s.append(["Bivisu", Bi])
 
@@ -158,9 +161,17 @@ def main():
             st.header(f"{sub[0]}")
             st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
 
+            if go_assessment is None:
+                st.warning("GO assessment unavailable: install goatools")
+                continue
+
             bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in sub[1]]
-            enrich = go_assessment(taxid, bic_gene_lists, gene_universe,
-                                   p_vals=p_vals)
+            enrich = go_assessment(
+                taxid,
+                bic_gene_lists,
+                gene_universe,
+                p_vals=p_vals,
+            )
 
             row = {"Algorithm": sub[0]}
             for pv in p_vals:
