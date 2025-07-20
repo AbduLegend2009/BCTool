@@ -45,7 +45,7 @@ def _as_idx_array(x) -> np.ndarray:
 
 def wrap_las(X: np.ndarray, *, max_iter: int = 100, alpha: float = 0.05) -> List[Bicluster]:
     """Run LAS; always returns a **list** with ≤1 Bicluster."""
-    h = las_with_significance(X, X.shape[0], X.shape[1], max_iter=max_iter, alpha=alpha)
+    h = las_with_significance(X, X.shape[0], X.shape[1], max_iter=int(max_iter), alpha=alpha)
     if h["rows"] is None or h["cols"] is None:
         return []
     rows = _as_idx_array(h["rows"])
@@ -58,7 +58,7 @@ def wrap_las(X: np.ndarray, *, max_iter: int = 100, alpha: float = 0.05) -> List
 # ---------------------------------------------------------------------------
 
 def wrap_church(X: np.ndarray, *, delta: float = 0.6, alpha: float = 0.05, max_biclusters: int = 10) -> List[Bicluster]:
-    bics = run_chen_church(X, msr_threshold=delta, alpha=alpha, max_biclusters=max_biclusters)
+    bics = run_chen_church(X, msr_threshold=delta, alpha=alpha, max_biclusters=int(max_biclusters))
     out: List[Bicluster] = []
     for rows, cols, msr in bics:
         out.append(Bicluster(_as_idx_array(rows), _as_idx_array(cols), float(-msr)))  # negative MSR => higher better
@@ -76,7 +76,7 @@ def wrap_isa(
     t_g: float = 2.0,
     t_c: float = 2.0,
 ) -> List[Bicluster]:
-    mods = ISA_multi_seed(X, n_seeds=n_seeds, seed_size=seed_size, t_g=t_g, t_c=t_c)
+    mods = ISA_multi_seed(X, n_seeds=int(n_seeds), seed_size=int(seed_size), t_g=t_g, t_c=t_c)
     out: List[Bicluster] = []
     for m in mods:
         rows = np.where(m["s_g"])[0]
@@ -89,7 +89,7 @@ def wrap_isa(
 # ---------------------------------------------------------------------------
 
 def wrap_opsm(X: np.ndarray, *, k: int | None = None, restarts: int = 10) -> List[Bicluster]:
-    rows, cols = run_opsm(X, k=k, restarts=restarts)
+    rows, cols = run_opsm(X, k=None if k is None else int(k), restarts=int(restarts))
     return [Bicluster(_as_idx_array(rows), _as_idx_array(cols), float(rows.size))]
 
 # ---------------------------------------------------------------------------
@@ -106,7 +106,15 @@ def wrap_bivisu(
     min_cols: int = 2,
     max_iters: int = 5,
 ) -> List[Bicluster]:
-    bics = bivisu(X, model=model, eps=eps, thr=thr, min_rows=min_rows, min_cols=min_cols, max_iters=max_iters)
+    bics = bivisu(
+        X,
+        model=model,
+        eps=eps,
+        thr=thr,
+        min_rows=int(min_rows),
+        min_cols=int(min_cols),
+        max_iters=int(max_iters),
+    )
     out: List[Bicluster] = []
     for rows, cols in bics:
         out.append(Bicluster(_as_idx_array(list(rows)), _as_idx_array(list(cols)), float(len(rows))))
