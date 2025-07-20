@@ -49,7 +49,7 @@ def summarize_biclusters(bics, gene_ids, alg_name=None):
                 "Algorithm": alg,
                 "Rows": len(bic.rows),
                 "Cols": len(bic.cols),
-                "Genes": ", ".join(gene_ids[j] for j in bic.rows[:3]) + " …",
+                "Genes": ", ".join(str(gene_ids[j]) for j in bic.rows[:3]) + " …",
                 "Score": getattr(bic, "score", np.nan),
             })
 
