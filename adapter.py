@@ -18,7 +18,7 @@ from typing import List, Dict, Callable
 
 import numpy as np
 
-from LAS_algorithm import las_with_significance
+from LAS_algorithm import las_multi
 from Chen_Church_algorithm import run_chen_church
 from Bivisu_algorithm import bivisu
 from ISA_algorithm import ISA_multi_seed
@@ -50,23 +50,28 @@ def wrap_las(
     alpha: float = 0.05,
     k_rows: int = 10,
     k_cols: int = 20,
+    n_biclusters: int = 10,
+    random_state: int | None = None,
 ) -> List[Bicluster]:
-    """Run LAS; always returns a **list** with ≤1 Bicluster."""
-    h = las_with_significance(
+    """Run LAS multiple times and return all biclusters."""
+    results = las_multi(
         X,
-        X.shape[0],
-        X.shape[1],
+        n_biclusters=int(n_biclusters),
         max_iter=int(max_iter),
         alpha=alpha,
         k_rows=int(k_rows),
         k_cols=int(k_cols),
+        random_state=random_state,
     )
-    if h["rows"] is None or h["cols"] is None:
-        return []
-    rows = _as_idx_array(h["rows"])
-    cols = _as_idx_array(h["cols"])
-    score = float(h["z_score"])
-    return [Bicluster(rows, cols, score)]
+    out: List[Bicluster] = []
+    for r in results:
+        if r["rows"] is None or r["cols"] is None:
+            continue
+        rows = _as_idx_array(r["rows"])
+        cols = _as_idx_array(r["cols"])
+        score = float(r["z_score"])
+        out.append(Bicluster(rows, cols, score))
+    return out
 
 # ---------------------------------------------------------------------------
 # Chen & Church adapter

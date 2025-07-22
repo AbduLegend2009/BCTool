@@ -66,3 +66,58 @@ def las_with_significance(
         'rows': best_rows,
         'cols': best_cols
     }
+
+# -- new multi bicluster LAS --
+
+def las_multi(
+    X: np.ndarray,
+    *,
+    n_biclusters: int = 10,
+    max_iter: int = 100,
+    alpha: float = 0.05,
+    k_rows: int = 10,
+    k_cols: int = 20,
+    random_state: int | None = None,
+):
+    """Find multiple biclusters using repeated LAS runs.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Input expression matrix.
+    n_biclusters : int, optional
+        Maximum number of biclusters to return.
+    max_iter : int, optional
+        Iterations per LAS run.
+    alpha : float, optional
+        Significance threshold for bicluster acceptance.
+    k_rows : int, optional
+        Number of rows in candidate submatrices.
+    k_cols : int, optional
+        Number of columns in candidate submatrices.
+    random_state : int | None, optional
+        Random seed for reproducibility.
+    """
+    if random_state is not None:
+        np.random.seed(random_state)
+    X_work = X.copy()
+    bics = []
+    for _ in range(n_biclusters):
+        if np.isnan(X_work).all():
+            break
+        res = las_with_significance(
+            X_work,
+            X_work.shape[0],
+            X_work.shape[1],
+            max_iter=max_iter,
+            alpha=alpha,
+            k_rows=k_rows,
+            k_cols=k_cols,
+        )
+        rows = res['rows']
+        cols = res['cols']
+        if rows is None or cols is None:
+            break
+        bics.append(res)
+        X_work[np.ix_(rows, cols)] = np.nan
+    return bics
