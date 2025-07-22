@@ -3,15 +3,24 @@ import math
 from scipy.stats import norm
 
 
-def las_with_significance(test_array, testarray_rows, testarray_cols, max_iter=100, alpha=0.05):
+def las_with_significance(
+    test_array,
+    testarray_rows,
+    testarray_cols,
+    *,
+    max_iter=100,
+    alpha=0.05,
+    k_rows=10,
+    k_cols=20,
+):
    
     #variables
     num_rows = testarray_rows
     standard_deviation = test_array.std()
     array_mean = test_array.mean()
     alpha_level = alpha
-    k_rows = 10
-    k_cols = 20
+    k_rows = int(k_rows)
+    k_cols = int(k_cols)
 
     best_z_score = -np.inf
     best_p_score = 1.0

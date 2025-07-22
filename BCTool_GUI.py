@@ -78,6 +78,12 @@ def main():
             st.header("LAS")
             alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?")
             max_iter_LAS = st.number_input("What is the maximum amount of iterations?")
+            k_rows_LAS = st.number_input(
+                "How many rows in candidate submatrices?", value=10, step=1, min_value=1
+            )
+            k_cols_LAS = st.number_input(
+                "How many columns in candidate submatrices?", value=20, step=1, min_value=1
+            )
         if "Chen and Church" in sel_alg:
             st.header("Chen and Church")
             delta_C_C = st.number_input("What is the MSR threshold for biclusters?")
@@ -111,6 +117,8 @@ def main():
                         matrix,
                         max_iter=int(max_iter_LAS),
                         alpha=alpha_LAS,
+                        k_rows=int(k_rows_LAS),
+                        k_cols=int(k_cols_LAS),
                     )
                     s.append(["LAS",LAS])
                 elif _ == "Chen and Church":
