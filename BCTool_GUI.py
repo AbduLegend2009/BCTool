@@ -97,7 +97,7 @@ def main():
             t_c_ISA = st.number_input("What is the condition z-score threshold?")
         if "OPSM" in sel_alg:
             st.header("OPSM")
-            k_OPSM = st.number_input("What is the maximum amoung of conditions in each bicluster?")
+            k_OPSM = st.number_input("What is the maximum amount of conditions in each bicluster?")
             restarts_OPSM = st.number_input("How many restarts?")
         if "Bivisu" in sel_alg:
             st.header("Bivisu")
