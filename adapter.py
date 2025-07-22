@@ -43,9 +43,24 @@ def _as_idx_array(x) -> np.ndarray:
 # LAS adapter
 # ---------------------------------------------------------------------------
 
-def wrap_las(X: np.ndarray, *, max_iter: int = 100, alpha: float = 0.05) -> List[Bicluster]:
+def wrap_las(
+    X: np.ndarray,
+    *,
+    max_iter: int = 100,
+    alpha: float = 0.05,
+    k_rows: int = 10,
+    k_cols: int = 20,
+) -> List[Bicluster]:
     """Run LAS; always returns a **list** with ≤1 Bicluster."""
-    h = las_with_significance(X, X.shape[0], X.shape[1], max_iter=int(max_iter), alpha=alpha)
+    h = las_with_significance(
+        X,
+        X.shape[0],
+        X.shape[1],
+        max_iter=int(max_iter),
+        alpha=alpha,
+        k_rows=int(k_rows),
+        k_cols=int(k_cols),
+    )
     if h["rows"] is None or h["cols"] is None:
         return []
     rows = _as_idx_array(h["rows"])
