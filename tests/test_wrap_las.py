@@ -1,11 +1,11 @@
-import numpy as np
+from pathlib import Path
+import pandas as pd
 import adapter
 
 
 def test_wrap_las_returns_bicluster():
-    np.random.seed(0)
-    X = np.zeros((15, 25))
-    X[:10, :20] = 10
+    data_path = Path(__file__).with_name("data") / "sample_matrix.csv"
+    X = pd.read_csv(data_path, index_col=0).values
     result = adapter.wrap_las(X, max_iter=10, alpha=0.05)
     assert isinstance(result, list)
     assert len(result) == 1
