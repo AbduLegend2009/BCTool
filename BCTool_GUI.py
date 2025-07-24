@@ -171,10 +171,10 @@ def main():
         all_enrich = []
         alg_names = list(st.session_state["Biclusters"].keys())
         tabs = st.tabs(alg_names)
+        tab_map = dict(zip(alg_names, tabs))
 
-        for i, alg in enumerate(alg_names):
-            bic_list = st.session_state["Biclusters"][alg]
-            with tabs[i]:
+        for alg, bic_list in st.session_state["Biclusters"].items():
+            with tab_map[alg]:
                 st.header(alg)
                 st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
