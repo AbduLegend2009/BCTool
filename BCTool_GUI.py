@@ -111,8 +111,10 @@ def main():
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
             s = st.session_state.get("Biclusters", {})
+
             if isinstance(s, list):
                 s = {name: bic_list for name, bic_list in s}
+
             for _ in sel_alg:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(
@@ -159,7 +161,12 @@ def main():
 
                     s["Bivisu"] = Bi
 
-            st.session_state["Biclusters"] = s
+
+                    s["Bivisu"] = Bi
+
+            if "Biclusters" not in st.session_state:
+                st.session_state["Biclusters"] = []
+            st.session_state["Biclusters"].extend(s)
 
     if "Biclusters" in st.session_state and matrix is not None:
         if isinstance(st.session_state["Biclusters"], list):
