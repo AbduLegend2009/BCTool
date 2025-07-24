@@ -110,7 +110,7 @@ def main():
             if not sel_alg:
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
-            s = []
+            s = st.session_state.get("Biclusters", {})
             for _ in sel_alg:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(
@@ -120,7 +120,7 @@ def main():
                         k_rows=int(k_rows_LAS),
                         k_cols=int(k_cols_LAS),
                     )
-                    s.append(["LAS",LAS])
+                    s["LAS"] = LAS
                 elif _ == "Chen and Church":
                     Chen_and_Church = adapter.wrap_church(
                         matrix,
@@ -128,7 +128,7 @@ def main():
                         alpha=alpha_C_C,
                         max_biclusters=int(max_bi_C_C),
                     )
-                    s.append(["Chen_and_Church", Chen_and_Church])
+                    s["Chen and Church"] = Chen_and_Church
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(
                         matrix,
@@ -137,14 +137,14 @@ def main():
                         t_g=t_g_ISA,
                         t_c=t_c_ISA,
                     )
-                    s.append(["ISA", ISA])
+                    s["ISA"] = ISA
                 elif _ == "OPSM":
                     opsm = adapter.wrap_opsm(
                         matrix,
                         k=int(k_OPSM) if k_OPSM else None,
                         restarts=int(restarts_OPSM),
                     )
-                    s.append(["OPSM", opsm])
+                    s["OPSM"] = opsm
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(
                         matrix,
@@ -154,7 +154,8 @@ def main():
                         min_rows=int(min_genes_Bivisu),
                         min_cols=int(min_cond_Bivisu),
                     )
-                    s.append(["Bivisu", Bi])
+
+                    s["Bivisu"] = Bi
 
             if "Biclusters" not in st.session_state:
                 st.session_state["Biclusters"] = []
@@ -164,15 +165,15 @@ def main():
         gene_universe = set(gene_ids)
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
-        for sub in st.session_state["Biclusters"]:
-            st.header(f"{sub[0]}")
-            st.write(summarize_biclusters(sub[1], gene_ids, sub[0]))
+        for alg, bic_list in st.session_state["Biclusters"].items():
+            st.header(alg)
+            st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
-            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in sub[1]]
+            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in bic_list]
             enrich = go_assessment(int(taxid), bic_gene_lists, gene_universe,
                                    p_vals=p_vals)
 
-            row = {"Algorithm": sub[0]}
+            row = {"Algorithm": alg}
             for pv in p_vals:
                 row[str(pv)] = 100 * enrich[pv]
             all_enrich.append(row)
