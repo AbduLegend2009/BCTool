@@ -16,8 +16,8 @@ def las_with_significance(
    
     #variables
     num_rows = testarray_rows
-    standard_deviation = test_array.std()
-    array_mean = test_array.mean()
+    standard_deviation = np.nanstd(test_array)
+    array_mean = np.nanmean(test_array)
     alpha_level = alpha
     k_rows = int(k_rows)
     k_cols = int(k_cols)
@@ -31,14 +31,14 @@ def las_with_significance(
     # this is the loop tha creates random submatrices and calculates the means of them
     for _ in range(max_iter):
         rows = np.random.choice(num_rows, k_rows, replace=False)
-        column_means = test_array[rows, :].mean(axis=0)
+        column_means = np.nanmean(test_array[rows, :], axis=0)
         # sorts the top k columns by means
         cols = np.argsort(column_means)[-k_cols:]
-        row_means = test_array[:, cols].mean(axis=1)
+        row_means = np.nanmean(test_array[:, cols], axis=1)
         # sorts the top k columns by rows
         rows = np.argsort(row_means)[-k_rows:]
         new_submatrix = test_array[np.ix_(rows, cols)]  # new submatrix
-        new_submatrix_mean = new_submatrix.mean()  # submatrix mean
+        new_submatrix_mean = np.nanmean(new_submatrix)  # submatrix mean
 
         # the actual formula for calculating significance (calculating the required z scores)
         standard_error = math.sqrt(k_rows * k_cols)
