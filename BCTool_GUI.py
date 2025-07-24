@@ -156,7 +156,9 @@ def main():
                     )
                     s.append(["Bivisu", Bi])
 
-            st.session_state["Biclusters"] = s
+            if "Biclusters" not in st.session_state:
+                st.session_state["Biclusters"] = []
+            st.session_state["Biclusters"].extend(s)
 
     if "Biclusters" in st.session_state and matrix is not None:
         gene_universe = set(gene_ids)
