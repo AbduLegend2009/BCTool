@@ -111,6 +111,11 @@ def main():
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
             s = st.session_state.get("Biclusters", {})
+            if isinstance(s, list):
+                try:
+                    s = {name: bic_list for name, bic_list in s}
+                except Exception:
+                    s = {}
             for _ in sel_alg:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(
