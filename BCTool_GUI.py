@@ -8,10 +8,6 @@ def uploaded_data(data):
     if data is None:
         return None, None
     # Ensure file pointer is at the beginning for repeated reads
-    try:
-        data.seek(0)
-    except Exception:
-        pass
     suffix = data.name.split(".")[-1].lower()
     if suffix in {"csv", "tsv"}:
         df = pd.read_csv(data, sep="\t" if suffix == "tsv" else ",", index_col=0)
@@ -166,6 +162,10 @@ def main():
                     )
 
                     s["Bivisu"] = Bi
+                try:
+                    data.seek(0)
+                except Exception:
+                    pass
 
             # Persist biclusters for later visualization
             st.session_state["Biclusters"] = s
