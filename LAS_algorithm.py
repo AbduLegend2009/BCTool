@@ -100,11 +100,12 @@ def las_multi(
     """
     if random_state is not None:
         np.random.seed(random_state)
+
     X_work = X.copy()
+    overall_mean = float(X.mean())
+
     bics = []
     for _ in range(n_biclusters):
-        if np.isnan(X_work).all():
-            break
         res = las_with_significance(
             X_work,
             X_work.shape[0],
@@ -119,5 +120,5 @@ def las_multi(
         if rows is None or cols is None:
             break
         bics.append(res)
-        X_work[np.ix_(rows, cols)] = np.nan
+        X_work[np.ix_(rows, cols)] = overall_mean
     return bics
