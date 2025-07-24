@@ -172,9 +172,9 @@ def main():
         alg_names = list(st.session_state["Biclusters"].keys())
         tabs = st.tabs(alg_names)
 
-        for alg, tab in zip(alg_names, tabs):
+        for i, alg in enumerate(alg_names):
             bic_list = st.session_state["Biclusters"][alg]
-            with tab:
+            with tabs[i]:
                 st.header(alg)
                 st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
