@@ -113,6 +113,7 @@ def main():
             s = st.session_state.get("Biclusters", {})
 
             if isinstance(s, list):
+                # backward compatibility if previous state was stored as a list
                 s = {name: bic_list for name, bic_list in s}
 
             for _ in sel_alg:
@@ -161,18 +162,10 @@ def main():
 
                     s["Bivisu"] = Bi
 
-
-                    s["Bivisu"] = Bi
-
-            if "Biclusters" not in st.session_state:
-                st.session_state["Biclusters"] = []
-            st.session_state["Biclusters"].extend(s)
+            # Persist biclusters for later visualization
+            st.session_state["Biclusters"] = s
 
     if "Biclusters" in st.session_state and matrix is not None:
-        if isinstance(st.session_state["Biclusters"], list):
-            st.session_state["Biclusters"] = {
-                name: bic_list for name, bic_list in st.session_state["Biclusters"]
-            }
         gene_universe = set(gene_ids)
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
