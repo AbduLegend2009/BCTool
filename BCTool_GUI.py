@@ -111,11 +111,11 @@ def main():
             if not sel_alg:
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
-            s = st.session_state.get("Biclusters", {})
+            s = st.session_state.get("Biclusters", [])
 
-            if isinstance(s, list):
-                # backward compatibility if previous state was stored as a list
-                s = {name: bic_list for name, bic_list in s}
+            if isinstance(s, dict):
+                # backward compatibility if previous state was stored as a dict
+                s = list(s.items())
 
             for _ in sel_alg:
                 if _ == "LAS":
@@ -126,7 +126,8 @@ def main():
                         k_rows=int(k_rows_LAS),
                         k_cols=int(k_cols_LAS),
                     )
-                    s["LAS"] = LAS
+                    s = [(n, b) for n, b in s if n != "LAS"]
+                    s.append(("LAS", LAS))
                 elif _ == "Chen and Church":
                     Chen_and_Church = adapter.wrap_church(
                         matrix,
@@ -134,7 +135,8 @@ def main():
                         alpha=alpha_C_C,
                         max_biclusters=int(max_bi_C_C),
                     )
-                    s["Chen and Church"] = Chen_and_Church
+                    s = [(n, b) for n, b in s if n != "Chen and Church"]
+                    s.append(("Chen and Church", Chen_and_Church))
                 elif _ == "ISA":
                     ISA = adapter.wrap_isa(
                         matrix,
@@ -143,14 +145,16 @@ def main():
                         t_g=t_g_ISA,
                         t_c=t_c_ISA,
                     )
-                    s["ISA"] = ISA
+                    s = [(n, b) for n, b in s if n != "ISA"]
+                    s.append(("ISA", ISA))
                 elif _ == "OPSM":
                     opsm = adapter.wrap_opsm(
                         matrix,
                         k=int(k_OPSM) if k_OPSM else None,
                         restarts=int(restarts_OPSM),
                     )
-                    s["OPSM"] = opsm
+                    s = [(n, b) for n, b in s if n != "OPSM"]
+                    s.append(("OPSM", opsm))
                 elif _ == "Bivisu":
                     Bi = adapter.wrap_bivisu(
                         matrix,
@@ -161,7 +165,8 @@ def main():
                         min_cols=int(min_cond_Bivisu),
                     )
 
-                    s["Bivisu"] = Bi
+                    s = [(n, b) for n, b in s if n != "Bivisu"]
+                    s.append(("Bivisu", Bi))
                 try:
                     data.seek(0)
                 except Exception:
@@ -174,10 +179,10 @@ def main():
         gene_universe = set(gene_ids)
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
-        alg_names = list(st.session_state["Biclusters"].keys())
+        alg_names = [name for name, _ in st.session_state["Biclusters"]]
         tabs = st.tabs(alg_names)
 
-        for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"].items()):
+        for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
             with tabs[i]:
                 st.header(alg)
                 st.write(summarize_biclusters(bic_list, gene_ids, alg))
