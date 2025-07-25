@@ -126,6 +126,7 @@ def main():
                         k_rows=int(k_rows_LAS),
                         k_cols=int(k_cols_LAS),
                     )
+                    # remove any previous LAS result so rerunning doesn't add another tab
                     s = [(n, b) for n, b in s if n != "LAS"]
                     s.append(("LAS", LAS))
                 elif _ == "Chen and Church":
@@ -135,6 +136,7 @@ def main():
                         alpha=alpha_C_C,
                         max_biclusters=int(max_bi_C_C),
                     )
+                    # ensure only one result per algorithm is stored
                     s = [(n, b) for n, b in s if n != "Chen and Church"]
                     s.append(("Chen and Church", Chen_and_Church))
                 elif _ == "ISA":
@@ -145,6 +147,7 @@ def main():
                         t_g=t_g_ISA,
                         t_c=t_c_ISA,
                     )
+                    # replace older ISA run if present
                     s = [(n, b) for n, b in s if n != "ISA"]
                     s.append(("ISA", ISA))
                 elif _ == "OPSM":
@@ -153,6 +156,7 @@ def main():
                         k=int(k_OPSM) if k_OPSM else None,
                         restarts=int(restarts_OPSM),
                     )
+                    # discard existing OPSM result to keep list unique
                     s = [(n, b) for n, b in s if n != "OPSM"]
                     s.append(("OPSM", opsm))
                 elif _ == "Bivisu":
@@ -165,6 +169,7 @@ def main():
                         min_cols=int(min_cond_Bivisu),
                     )
 
+                    # remove previous Bivisu result if it exists
                     s = [(n, b) for n, b in s if n != "Bivisu"]
                     s.append(("Bivisu", Bi))
                 try:
