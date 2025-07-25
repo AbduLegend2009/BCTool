@@ -180,10 +180,8 @@ def main():
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
         alg_names = [name for name, _ in st.session_state["Biclusters"]]
-        tabs = st.tabs(alg_names)
 
         for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
-            with tabs[i]:
                 st.header(alg)
                 st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
