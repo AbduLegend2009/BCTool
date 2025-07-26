@@ -12,7 +12,20 @@ from collections import OrderedDict
 OBO_URL = "https://current.geneontology.org/ontology/go-basic.obo"
 G2G_URL = "https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz"
 
-def ensure_file(url: str, local_name: str) -> Path:
+def _download(url: str, dest: Path, retries: int = 1) -> None:
+    """Download *url* to *dest* with optional retry."""
+    for attempt in range(retries + 1):
+        try:
+            urllib.request.urlretrieve(url, str(dest))
+            return
+        except Exception as exc:
+            if attempt < retries:
+                print(f"Download failed ({exc}). Retrying…")
+            else:
+                raise RuntimeError(f"Failed to download {url}: {exc}") from exc
+
+
+def ensure_file(url: str, local_name: str | Path, retries: int = 1) -> Path:
     """
     Make sure *local_name* exists in the current folder.
     If it doesn’t, download it from *url*.
@@ -20,8 +33,8 @@ def ensure_file(url: str, local_name: str) -> Path:
     path = Path(local_name)
     if path.exists():
         return path
-    print(f"Downloading {local_name} …")
-    urllib.request.urlretrieve(url, path)
+    print(f"Downloading {path} …")
+    _download(url, path, retries=retries)
     return path
 OBO = ensure_file(OBO_URL, "go-basic.obo")
 G2G_COMPRESSED = ensure_file(G2G_URL, "gene2go.gz")
@@ -51,7 +64,7 @@ def ensure_uncompressed_g2g(path: Path) -> Path:
         if isinstance(exc, EOFError):
             print("Corrupt gene2go archive detected – re-downloading…")
             path.unlink(missing_ok=True)
-            urllib.request.urlretrieve(G2G_URL, path)
+            _download(G2G_URL, path)
             return ensure_uncompressed_g2g(path)
         raise RuntimeError(f"Failed to decompress {path}: {exc}")
     return target
