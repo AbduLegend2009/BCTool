@@ -1,113 +1,71 @@
+# filesystem + download helpers
 from pathlib import Path
 import urllib.request
 import gzip
 import shutil
+
+# GO ontology & annotations
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
+
+# enrichment engine
 from goatools.go_enrichment import GOEnrichmentStudy
-from collections import OrderedDict
 
 
-# Canonical GO data sources
-OBO_URL = "https://current.geneontology.org/ontology/go-basic.obo"
-G2G_URL = "https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz"
-
-def _download(url: str, dest: Path, retries: int = 1) -> None:
-    """Download *url* to *dest* with optional retry."""
-    for attempt in range(retries + 1):
-        try:
-            urllib.request.urlretrieve(url, str(dest))
-            return
-        except Exception as exc:
-            if attempt < retries:
-                print(f"Download failed ({exc}). Retrying…")
-            else:
-                raise RuntimeError(f"Failed to download {url}: {exc}") from exc
+def ensure_file(path: Path, url: str):
+    if not path.exists():
+        urllib.request.urlretrieve(url, str(path))
 
 
-def ensure_file(url: str, local_name: str | Path, retries: int = 1) -> Path:
-    """
-    Make sure *local_name* exists in the current folder.
-    If it doesn’t, download it from *url*.
-    """
-    path = Path(local_name)
-    if path.exists():
-        return path
-    print(f"Downloading {path} …")
-    _download(url, path, retries=retries)
-    return path
-OBO = ensure_file(OBO_URL, "go-basic.obo")
 
-def ensure_g2g(path: str | Path) -> Path:
-    """Return compressed gene2go file, downloading if needed."""
-    return ensure_file(G2G_URL, path)
-
-
-def ensure_uncompressed_g2g(path: str | Path) -> Path:
-    """Return decompressed gene2go file."""
-    path = Path(path)
-    target = path.with_suffix("")
-    if target.exists():
-        try:
-            with open(target) as fh:
-                first_line = fh.readline().strip()
-            if not first_line.startswith(
-                "version https://git-lfs.github.com/spec"
-            ):
-                return target
-            print("Ignoring git-lfs pointer for gene2go – extracting archive…")
-            target.unlink()
-        except OSError:
-            return target
-    try:
-        with gzip.open(path, "rt") as fin, open(target, "w") as fout:
+def gunzip_if_needed(gz_path: Path, out_path: Path):
+    if not out_path.exists():
+        with gzip.open(str(gz_path), 'rb') as fin, out_path.open('wb') as fout:
             shutil.copyfileobj(fin, fout)
-    except (OSError, EOFError) as exc:
-        if isinstance(exc, EOFError):
-            print("Corrupt gene2go archive detected – re-downloading…")
-            path.unlink(missing_ok=True)
-            _download(G2G_URL, path)
-            return ensure_uncompressed_g2g(path)
-        raise RuntimeError(f"Failed to decompress {path}: {exc}")
-    return target
 
 
-G2G_COMPRESSED = ensure_g2g("gene2go.gz")
-G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
+def init_goea(taxid: int, universe: set[int]) -> GOEnrichmentStudy:
+    """
+    1. Parse the GO ontology (only once per run).
+    2. Load NCBI gene2go for the given taxid.
+    3. Build and return a GOEnrichmentStudy.
+    """
+    # 1. Ontology graph
+    dag = GODag(str(OBO_PATH))
 
-oboDAG = GODag(str(OBO))
-
-def get_associations(taxid:int):
-    assoc=read_ncbi_gene2go(str(G2G), taxids=[taxid])
+    # 2. Associations: gene→GO terms for our organism
+    assoc = read_ncbi_gene2go(str(G2G_TXT_PATH), taxids=[taxid])
     if not assoc:
-        raise ValueError("No GO annotations—check taxid or ID type")
-    return assoc
+        raise ValueError(f"No GO annotations found for taxid={taxid}")
 
-def init_goea(taxid, universe):
-    return GOEnrichmentStudy(
-        list(universe),
-        get_associations(taxid),
-        oboDAG,
-        methods=["fdr_bh"],
-        alpha=1.0,
-        propagate_counts=True
+    # 3. Enrichment engine: universe + assoc + graph
+    goea = GOEnrichmentStudy(
+        list(universe),      # background gene list
+        assoc,               # geneid → goids
+        dag,                 # ontology
+        methods=["fdr_bh"],  # apply Benjamini–Hochberg FDR
     )
-def is_enriched(genes: list[str], goea, p_cut: float) -> bool:
-    if len(genes)<2:
-        return False
-    results = goea.run_study(genes)
-    return any(r.p_fdr_bh < p_cut for r in results)
-def go_assessment(
-    taxid: int,
-    biclusters: list[list[str]],
-    universe: set[int],
-    p_vals=(0.05, 0.01, 0.001),
-) -> OrderedDict:
-    goea = init_goea(taxid,universe)
-    enriched_flags = {th: 0 for th in p_vals}
-    for bic in biclusters:
-        for th in p_vals:
-            if is_enriched(bic, goea, th):
-                enriched_flags[th] += 1
-    total = len(biclusters)
-    return OrderedDict((th, enriched_flags[th] / total) for th in p_vals)
+    return goea
+
+
+
+
+OBO_URL  = "http://purl.obolibrary.org/obo/go/go-basic.obo"
+G2G_URL  = "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz"
+
+
+
+OBO_PATH        = Path("data/go-basic.obo")
+G2G_GZ_PATH     = Path("data/gene2go.gz")
+G2G_TXT_PATH    = Path("data/gene2go.txt")
+
+
+
+
+# 1. download if needed
+ensure_file(OBO_PATH, OBO_URL)
+ensure_file(G2G_GZ_PATH, G2G_URL)
+
+
+# 2. decompress if needed
+gunzip_if_needed(G2G_GZ_PATH, G2G_TXT_PATH)
