@@ -50,7 +50,8 @@ def ensure_uncompressed_g2g(path: Path) -> Path:
     except (OSError, EOFError) as exc:
         if isinstance(exc, EOFError):
             print("Corrupt gene2go archive detected – re-downloading…")
-            path.unlink(missing_ok=True)
+            if path.exists():
+                path.unlink()
             urllib.request.urlretrieve(G2G_URL, path)
             return ensure_uncompressed_g2g(path)
         raise RuntimeError(f"Failed to decompress {path}: {exc}")
