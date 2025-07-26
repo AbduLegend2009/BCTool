@@ -1,5 +1,7 @@
 from pathlib import Path
 import urllib.request
+import gzip
+import shutil
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
 from goatools.go_enrichment import GOEnrichmentStudy
@@ -36,18 +38,22 @@ def ensure_file(url: str, local_name: str | Path, retries: int = 1) -> Path:
     return path
 OBO = ensure_file(OBO_URL, "go-basic.obo")
 
-def ensure_g2g(path: str) -> Path:
+def ensure_g2g(path: str | Path) -> Path:
     """Return compressed gene2go file, downloading if needed."""
     return ensure_file(G2G_URL, path)
 
 
-
+def ensure_uncompressed_g2g(path: str | Path) -> Path:
+    """Return decompressed gene2go file."""
+    path = Path(path)
     target = path.with_suffix("")
     if target.exists():
         try:
             with open(target) as fh:
                 first_line = fh.readline().strip()
-            if not first_line.startswith("version https://git-lfs.github.com/spec"):
+            if not first_line.startswith(
+                "version https://git-lfs.github.com/spec"
+            ):
                 return target
             print("Ignoring git-lfs pointer for gene2go – extracting archive…")
             target.unlink()
@@ -61,11 +67,12 @@ def ensure_g2g(path: str) -> Path:
             print("Corrupt gene2go archive detected – re-downloading…")
             path.unlink(missing_ok=True)
             _download(G2G_URL, path)
-
             return ensure_uncompressed_g2g(path)
         raise RuntimeError(f"Failed to decompress {path}: {exc}")
     return target
 
+
+G2G_COMPRESSED = ensure_g2g("gene2go.gz")
 G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
 
 oboDAG = GODag(str(OBO))
