@@ -74,6 +74,12 @@ def main():
         st.header("Customization")
         matrix, gene_ids = uploaded_data(data)
         taxid = st.number_input("What is the taxonomy identifier?")
+        default_p = [0.05, 0.01, 0.001]
+        p_vals = st.sidebar.multiselect(
+        "GO enrichment thresholds",
+        options=default_p,
+        default=default_p
+        )
         st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
@@ -177,7 +183,6 @@ def main():
 
     if "Biclusters" in st.session_state and matrix is not None:
         gene_universe = set(gene_ids)
-        p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
         st.header("Algorithm(s)")
         for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
