@@ -35,7 +35,15 @@ def ensure_uncompressed_g2g(path: Path) -> Path:
 
     target = path.with_suffix("")
     if target.exists():
-        return target
+        try:
+            with open(target) as fh:
+                first_line = fh.readline().strip()
+            if not first_line.startswith("version https://git-lfs.github.com/spec"):
+                return target
+            print("Ignoring git-lfs pointer for gene2go – extracting archive…")
+            target.unlink()
+        except OSError:
+            return target
     try:
         with gzip.open(path, "rt") as fin, open(target, "w") as fout:
             shutil.copyfileobj(fin, fout)
