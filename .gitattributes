@@ -1,1 +1,2 @@
 gene2go filter=lfs diff=lfs merge=lfs -text
+gene2go.gz filter=lfs diff=lfs merge=lfs -text
