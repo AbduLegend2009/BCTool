@@ -27,7 +27,33 @@ def ensure_g2g(path: str) -> Path:
     """Return compressed gene2go file, downloading if needed."""
     return ensure_file(G2G_URL, path)
 
-G2G = ensure_g2g("gene2go.gz")
+
+
+    target = path.with_suffix("")
+    if target.exists():
+        try:
+            with open(target) as fh:
+                first_line = fh.readline().strip()
+            if not first_line.startswith("version https://git-lfs.github.com/spec"):
+                return target
+            print("Ignoring git-lfs pointer for gene2go – extracting archive…")
+            target.unlink()
+        except OSError:
+            return target
+    try:
+        with gzip.open(path, "rt") as fin, open(target, "w") as fout:
+            shutil.copyfileobj(fin, fout)
+    except (OSError, EOFError) as exc:
+        if isinstance(exc, EOFError):
+            print("Corrupt gene2go archive detected – re-downloading…")
+            if path.exists():
+                path.unlink()
+            urllib.request.urlretrieve(G2G_URL, path)
+            return ensure_uncompressed_g2g(path)
+        raise RuntimeError(f"Failed to decompress {path}: {exc}")
+    return target
+
+G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
 
 oboDAG = GODag(str(OBO))
 
