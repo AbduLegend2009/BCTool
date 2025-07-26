@@ -74,8 +74,8 @@ def main():
         st.header("Customization")
         matrix, gene_ids = uploaded_data(data)
         taxid = st.number_input("What is the taxonomy identifier?")
-        sel_alg = st.multiselect("Please select algorithms", algorithms)
-        if "LAS" in sel_alg:
+        st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
+        if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
             alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?")
             max_iter_LAS = st.number_input("What is the maximum amount of iterations?")
@@ -85,22 +85,22 @@ def main():
             k_cols_LAS = st.number_input(
                 "How many columns in candidate submatrices?", value=20, step=1, min_value=1
             )
-        if "Chen and Church" in sel_alg:
+        if "Chen and Church" in st.session_state["sel_alg"]:
             st.header("Chen and Church")
             delta_C_C = st.number_input("What is the MSR threshold for biclusters?")
             alpha_C_C = st.number_input("What fraction of the cells are we allowed to prune?")
             max_bi_C_C = st.number_input("What is the maximum number of biclusters?")
-        if "ISA" in sel_alg:
+        if "ISA" in st.session_state["sel_alg"]:
             st.header("ISA")
             n_seeds_ISA = st.number_input("How many starting seeds?")
             seed_size_ISA = st.number_input("How many starting conditions in each seed?")
             t_g_ISA = st.number_input("What is the gene z-score threshold?")
             t_c_ISA = st.number_input("What is the condition z-score threshold?")
-        if "OPSM" in sel_alg:
+        if "OPSM" in st.session_state["sel_alg"]:
             st.header("OPSM")
             k_OPSM = st.number_input("What is the maximum amount of conditions in each bicluster?")
             restarts_OPSM = st.number_input("How many restarts?")
-        if "Bivisu" in sel_alg:
+        if "Bivisu" in st.session_state["sel_alg"]:
             st.header("Bivisu")
             model_Bivisu = st.selectbox("Which model do you want to be used?", ["add", "mult", "auto"], index = 2)
             eps_Bivisu = st.number_input("What is the bin width when quantasising the signature algorithms?")
@@ -108,7 +108,7 @@ def main():
             min_genes_Bivisu = st.number_input("What is the lowest number of genes per bicluster?")
             min_cond_Bivisu = st.number_input("What is the lowest number of conditions per bicluster?")
         if st.button("Run algorithms 🚀"):
-            if not sel_alg:
+            if not st.session_state["sel_alg"]:
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
             s = st.session_state.get("Biclusters", [])
@@ -117,7 +117,7 @@ def main():
                 # backward compatibility if previous state was stored as a dict
                 s = list(s.items())
 
-            for _ in sel_alg:
+            for _ in st.session_state["sel_alg"]:
                 if _ == "LAS":
                     LAS = adapter.wrap_las(
                         matrix,
@@ -180,9 +180,9 @@ def main():
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
         alg_names = [name for name, _ in st.session_state["Biclusters"]]
-
+        st.header("Algorithm(s)")
         for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
-                st.header(alg)
+                st.subheader(alg)
                 st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
                 bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in bic_list]
