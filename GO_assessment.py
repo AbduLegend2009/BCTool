@@ -27,14 +27,24 @@ OBO = ensure_file(OBO_URL, "go-basic.obo")
 G2G_COMPRESSED = ensure_file(G2G_URL, "gene2go.gz")
 
 def ensure_uncompressed_g2g(path: Path) -> Path:
-    """Return uncompressed gene2go file, extracting if needed."""
+    """Return uncompressed gene2go file, extracting if needed.
+
+    If decompression fails due to a truncated download the archive is
+    fetched again from ``G2G_URL`` and the operation retried.
+    """
+
     target = path.with_suffix("")
     if target.exists():
         return target
     try:
         with gzip.open(path, "rt") as fin, open(target, "w") as fout:
             shutil.copyfileobj(fin, fout)
-    except OSError as exc:
+    except (OSError, EOFError) as exc:
+        if isinstance(exc, EOFError):
+            print("Corrupt gene2go archive detected – re-downloading…")
+            path.unlink(missing_ok=True)
+            urllib.request.urlretrieve(G2G_URL, path)
+            return ensure_uncompressed_g2g(path)
         raise RuntimeError(f"Failed to decompress {path}: {exc}")
     return target
 
