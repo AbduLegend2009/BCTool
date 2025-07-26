@@ -179,20 +179,19 @@ def main():
         gene_universe = set(gene_ids)
         p_vals = (0.05, 0.01, 0.001)
         all_enrich = []
-        alg_names = [name for name, _ in st.session_state["Biclusters"]]
         st.header("Algorithm(s)")
         for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
-                st.subheader(alg)
-                st.write(summarize_biclusters(bic_list, gene_ids, alg))
+            st.subheader(alg)
+            st.write(summarize_biclusters(bic_list, gene_ids, alg))
 
-                bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in bic_list]
-                enrich = go_assessment(int(taxid), bic_gene_lists, gene_universe,
-                                       p_vals=p_vals)
+            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in bic_list]
+            enrich = go_assessment(int(taxid), bic_gene_lists, gene_universe,
+                                   p_vals=p_vals)
 
-                row = {"Algorithm": alg}
-                for pv in p_vals:
-                    row[str(pv)] = 100 * enrich[pv]
-                all_enrich.append(row)
+            row = {"Algorithm": alg}
+            for pv in p_vals:
+                row[str(pv)] = 100 * enrich[pv]
+            all_enrich.append(row)
 
         if all_enrich:
             enrich_df = pd.DataFrame(all_enrich).set_index("Algorithm")

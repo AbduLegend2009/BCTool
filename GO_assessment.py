@@ -2,6 +2,8 @@ from pathlib import Path
 import urllib.request
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
+import gzip
+import shutil
 from goatools.go_enrichment import GOEnrichmentStudy
 from collections import OrderedDict
 
@@ -22,7 +24,21 @@ def ensure_file(url: str, local_name: str) -> Path:
     urllib.request.urlretrieve(url, path)
     return path
 OBO = ensure_file(OBO_URL, "go-basic.obo")
-G2G = ensure_file(G2G_URL, "gene2go.gz")
+G2G_COMPRESSED = ensure_file(G2G_URL, "gene2go.gz")
+
+def ensure_uncompressed_g2g(path: Path) -> Path:
+    """Return uncompressed gene2go file, extracting if needed."""
+    target = path.with_suffix("")
+    if target.exists():
+        return target
+    try:
+        with gzip.open(path, "rt") as fin, open(target, "w") as fout:
+            shutil.copyfileobj(fin, fout)
+    except OSError as exc:
+        raise RuntimeError(f"Failed to decompress {path}: {exc}")
+    return target
+
+G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
 
 oboDAG = GODag(str(OBO))
 
