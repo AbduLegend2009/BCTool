@@ -31,11 +31,18 @@ def ensure_uncompressed_g2g(path: Path) -> Path:
     target = path.with_suffix("")
     if target.exists():
         return target
-    try:
+
+    def decompress():
         with gzip.open(path, "rt") as fin, open(target, "w") as fout:
             shutil.copyfileobj(fin, fout)
-    except OSError as exc:
-        raise RuntimeError(f"Failed to decompress {path}: {exc}")
+    try:
+        decompress()
+    except OSError:
+        # Possibly corrupted download; re-fetch and try once more
+        print(f"Corrupted {path}, re-downloading …")
+        path.unlink(missing_ok=True)
+        ensure_file(G2G_URL, path.name)
+        decompress()
     return target
 
 G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
