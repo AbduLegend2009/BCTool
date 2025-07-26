@@ -12,6 +12,30 @@ from goatools.associations import read_ncbi_gene2go
 from goatools.go_enrichment import GOEnrichmentStudy
 
 
+
+OBO_URL  = "http://purl.obolibrary.org/obo/go/go-basic.obo"
+G2G_URL  = "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz"
+
+
+
+OBO_PATH        = Path("data/go-basic.obo")
+G2G_GZ_PATH     = Path("data/gene2go.gz")
+G2G_TXT_PATH    = Path("data/gene2go.txt")
+
+
+
+
+# 1. download if needed
+ensure_file(OBO_PATH, OBO_URL)
+ensure_file(G2G_GZ_PATH, G2G_URL)
+
+
+# 2. decompress if needed
+gunzip_if_needed(G2G_GZ_PATH, G2G_TXT_PATH)
+
+
+
+
 def ensure_file(path: Path, url: str):
     if not path.exists():
         urllib.request.urlretrieve(url, str(path))
@@ -48,24 +72,30 @@ def init_goea(taxid: int, universe: set[int]) -> GOEnrichmentStudy:
     return goea
 
 
+def _is_enriched(genes: List[int], goea: GOEnrichmentStudy, p_cut: float) -> bool:
+    # skip trivial clusters
+    if len(genes) < 2:
+        return False
+    # run the enrichment test and see if any term passes FDR < p_cut
+    results = goea.run_study(genes)
+    return any(r.p_fdr_bh < p_cut for r in results)
 
 
-OBO_URL  = "http://purl.obolibrary.org/obo/go/go-basic.obo"
-G2G_URL  = "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz"
+def go_assessment(
+    taxid: int,
+    biclusters: List[List[int]],
+    universe: Set[int],
+    p_vals: Tuple[float, ...] = (0.05, 0.01, 0.001),
+) -> Dict[float, float]:
+    goea = init_goea(taxid, universe)
 
+    # count hits per threshold
+    hits = {p: 0 for p in p_vals}
+    for bic in biclusters:
+        for p in p_vals:
+            if _is_enriched(bic, goea, p):
+                hits[p] += 1
 
-
-OBO_PATH        = Path("data/go-basic.obo")
-G2G_GZ_PATH     = Path("data/gene2go.gz")
-G2G_TXT_PATH    = Path("data/gene2go.txt")
-
-
-
-
-# 1. download if needed
-ensure_file(OBO_PATH, OBO_URL)
-ensure_file(G2G_GZ_PATH, G2G_URL)
-
-
-# 2. decompress if needed
-gunzip_if_needed(G2G_GZ_PATH, G2G_TXT_PATH)
+    total = len(biclusters) or 1
+    # return fraction of enriched biclusters at each p-value
+    return {p: hits[p] / total for p in p_vals}
