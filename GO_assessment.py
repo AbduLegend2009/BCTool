@@ -3,12 +3,25 @@ from pathlib import Path
 import urllib.request
 import gzip
 import shutil
+from typing import List, Set, Tuple, Dict
 
 # GO ontology & annotations
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
 
 # enrichment engine
+def ensure_file(path: Path, url: str):
+    if not path.exists():
+        urllib.request.urlretrieve(url, str(path))
+
+
+
+def gunzip_if_needed(gz_path: Path, out_path: Path):
+    if not out_path.exists():
+        with gzip.open(str(gz_path), 'rb') as fin, out_path.open('wb') as fout:
+            shutil.copyfileobj(fin, fout)
+
+
 from goatools.go_enrichment import GOEnrichmentStudy
 
 
@@ -24,28 +37,15 @@ G2G_TXT_PATH    = Path("data/gene2go.txt")
 
 
 
-
 # 1. download if needed
+OBO_PATH.parent.mkdir(parents=True, exist_ok=True)
+G2G_GZ_PATH.parent.mkdir(parents=True, exist_ok=True)
 ensure_file(OBO_PATH, OBO_URL)
 ensure_file(G2G_GZ_PATH, G2G_URL)
 
 
 # 2. decompress if needed
 gunzip_if_needed(G2G_GZ_PATH, G2G_TXT_PATH)
-
-
-
-
-def ensure_file(path: Path, url: str):
-    if not path.exists():
-        urllib.request.urlretrieve(url, str(path))
-
-
-
-def gunzip_if_needed(gz_path: Path, out_path: Path):
-    if not out_path.exists():
-        with gzip.open(str(gz_path), 'rb') as fin, out_path.open('wb') as fout:
-            shutil.copyfileobj(fin, fout)
 
 
 def init_goea(taxid: int, universe: set[int]) -> GOEnrichmentStudy:
