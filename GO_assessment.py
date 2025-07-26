@@ -2,8 +2,6 @@ from pathlib import Path
 import urllib.request
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
-import gzip
-import shutil
 from goatools.go_enrichment import GOEnrichmentStudy
 from collections import OrderedDict
 
@@ -37,14 +35,12 @@ def ensure_file(url: str, local_name: str | Path, retries: int = 1) -> Path:
     _download(url, path, retries=retries)
     return path
 OBO = ensure_file(OBO_URL, "go-basic.obo")
-G2G_COMPRESSED = ensure_file(G2G_URL, "gene2go.gz")
 
-def ensure_uncompressed_g2g(path: Path) -> Path:
-    """Return uncompressed gene2go file, extracting if needed.
+def ensure_g2g(path: str) -> Path:
+    """Return compressed gene2go file, downloading if needed."""
+    return ensure_file(G2G_URL, path)
 
-    If decompression fails due to a truncated download the archive is
-    fetched again from ``G2G_URL`` and the operation retried.
-    """
+
 
     target = path.with_suffix("")
     if target.exists():
@@ -65,6 +61,7 @@ def ensure_uncompressed_g2g(path: Path) -> Path:
             print("Corrupt gene2go archive detected – re-downloading…")
             path.unlink(missing_ok=True)
             _download(G2G_URL, path)
+
             return ensure_uncompressed_g2g(path)
         raise RuntimeError(f"Failed to decompress {path}: {exc}")
     return target
