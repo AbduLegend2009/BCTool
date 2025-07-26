@@ -2,8 +2,6 @@ from pathlib import Path
 import urllib.request
 from goatools.obo_parser import GODag
 from goatools.associations import read_ncbi_gene2go
-import gzip
-import shutil
 from goatools.go_enrichment import GOEnrichmentStudy
 from collections import OrderedDict
 
@@ -24,39 +22,12 @@ def ensure_file(url: str, local_name: str) -> Path:
     urllib.request.urlretrieve(url, path)
     return path
 OBO = ensure_file(OBO_URL, "go-basic.obo")
-G2G_COMPRESSED = ensure_file(G2G_URL, "gene2go.gz")
 
-def ensure_uncompressed_g2g(path: Path) -> Path:
-    """Return uncompressed gene2go file, extracting if needed.
+def ensure_g2g(path: str) -> Path:
+    """Return compressed gene2go file, downloading if needed."""
+    return ensure_file(G2G_URL, path)
 
-    If decompression fails due to a truncated download the archive is
-    fetched again from ``G2G_URL`` and the operation retried.
-    """
-
-    target = path.with_suffix("")
-    if target.exists():
-        try:
-            with open(target) as fh:
-                first_line = fh.readline().strip()
-            if not first_line.startswith("version https://git-lfs.github.com/spec"):
-                return target
-            print("Ignoring git-lfs pointer for gene2go – extracting archive…")
-            target.unlink()
-        except OSError:
-            return target
-    try:
-        with gzip.open(path, "rt") as fin, open(target, "w") as fout:
-            shutil.copyfileobj(fin, fout)
-    except (OSError, EOFError) as exc:
-        if isinstance(exc, EOFError):
-            print("Corrupt gene2go archive detected – re-downloading…")
-            path.unlink(missing_ok=True)
-            urllib.request.urlretrieve(G2G_URL, path)
-            return ensure_uncompressed_g2g(path)
-        raise RuntimeError(f"Failed to decompress {path}: {exc}")
-    return target
-
-G2G = ensure_uncompressed_g2g(G2G_COMPRESSED)
+G2G = ensure_g2g("gene2go.gz")
 
 oboDAG = GODag(str(OBO))
 
