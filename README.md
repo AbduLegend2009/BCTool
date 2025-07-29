@@ -286,3 +286,7 @@ If you publish work utilizing BCTool, please acknowledge the source algorithms a
 
 BCTool simplifies complex gene expression analysis with a visual, user-friendly environment. Nevertheless, always perform appropriate validation to ensure research integrity.
 
+
+📣 Wrap Up
+
+Thank you for exploring **BCTool**. If you encounter issues or wish to contribute enhancements, open a GitHub issue or pull request. Your feedback helps improve the project.
