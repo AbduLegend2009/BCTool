@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+
+/data/gene2go.txt
+/data/gene2go.gz
+/data/go-basic.obo
