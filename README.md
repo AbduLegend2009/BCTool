@@ -1,6 +1,6 @@
-🐬 BCTool — Gene Expression Matrix Analyzer GUI
+BCTool — Biclustering Tool
 
-BCTool is a comprehensive graphical interface for exploring and analyzing large-scale gene expression datasets. It simplifies the process of transforming HCL files into Python-readable submatrices and provides accessible tools for biclustering and visual data exploration.
+BCTool is a comprehensive graphical interface for analyzing large-scale gene expression datasets. It takes in CSV, TSV, XLSV, and XLS datasets and find bicluster submatrices using various methods.
 
 🔧 Features Overview
 
@@ -8,43 +8,28 @@ BCTool is a comprehensive graphical interface for exploring and analyzing large-
 
 Multi-Format Compatibility: Supports CSV, TSV, Excel (.xls, .xlsx)
 
-HCL File Interpretation: Converts compatible HCL text files into structured gene expression matrices
-
 Automatic Validation: Performs file integrity and format checks during loading
 
 🔬 Analytical Tools
 
 Integrated Biclustering Algorithms:
 
-LAS (Large Average Submatrices)
+  LAS (Large Average Submatrices)
 
-Chen & Church Method
+  Chen & Church Method
 
-ISA (Iterative Signature Algorithm)
+  ISA (Iterative Signature Algorithm)
 
-OPSM (Order-Preserving Submatrix)
+  OPSM (Order-Preserving Submatrix)
 
-BiVisu with visualization support
-
-
-
-📊 Interactive Visualization
-
-Heatmap Display: Explore overall expression trends
-
-Bicluster Visual Comparisons: Contrast algorithm outputs side by side
+  BiVisu with visualization support
 
 
 
-💾 Export Functions
+Output:
 
-Flexible File Output: Save results as JSON, CSV, or Excel
+  All biclusters found for the selected algorithms
 
-Export Options Include:
-
-Bicluster details
-
-Processed matrix files
 
 
 
@@ -52,7 +37,7 @@ Processed matrix files
 
 Requirements
 
-Python 3.7 or newer
+Python 3.8 or newer
 
 pip package manager
 
