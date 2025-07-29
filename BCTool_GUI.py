@@ -118,6 +118,9 @@ def main():
             if not st.session_state["sel_alg"]:
                 st.error("No algorithms found. Please ensure that algorithms are available.")
                 st.stop()
+            if not data:
+                st.error("No data found. Please ensure that the data is available.")
+                st.stop()
             s = st.session_state.get("Biclusters", [])
 
             if isinstance(s, dict):
