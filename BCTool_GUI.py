@@ -5,7 +5,7 @@ import adapter
 
 def uploaded_data(data):
     if data is None:
-        return None, None
+        return None, None, None
     # Ensure file pointer is at the beginning for repeated reads
     suffix = data.name.split(".")[-1].lower()
     if suffix in {"csv", "tsv"}:
@@ -20,8 +20,9 @@ def uploaded_data(data):
         st.warning("Non-numeric values found; coerced to NaN and dropped.")
         df = df.dropna(axis=0, how="any")
     gene_ids = df.index.tolist()
+    cond_ids = df.columns.tolist()
     matrix   = df.to_numpy(dtype=float)
-    return matrix, gene_ids
+    return matrix, gene_ids, cond_ids
 
 algorithms = ["LAS", "Chen and Church", "ISA", "OPSM", "Bivisu"]
 
@@ -62,6 +63,14 @@ def summarize_biclusters(bics, gene_ids, alg_name=None):
     return pd.DataFrame(rows)
 
 
+def bicluster_dataframe(bic, matrix, gene_ids, cond_ids):
+    """Return a DataFrame for a single bicluster showing expression values."""
+    sub = matrix[np.ix_(bic.rows, bic.cols)]
+    row_labels = [gene_ids[i] for i in bic.rows]
+    col_labels = [cond_ids[j] for j in bic.cols]
+    return pd.DataFrame(sub, index=row_labels, columns=col_labels)
+
+
 
 def main():
     st.title("BCTool 🧬")
@@ -71,7 +80,7 @@ def main():
     )
     with st.sidebar:
         st.header("Customization")
-        matrix, gene_ids = uploaded_data(data)
+        matrix, gene_ids, cond_ids = uploaded_data(data)
         st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
@@ -175,9 +184,18 @@ def main():
 
     if "Biclusters" in st.session_state and matrix is not None:
         st.header("Algorithm(s)")
-        for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
+        bic_map = {}
+        for alg, bic_list in st.session_state["Biclusters"]:
             st.subheader(alg)
             st.write(summarize_biclusters(bic_list, gene_ids, alg))
+            for j, bic in enumerate(bic_list):
+                bic_map[f"{alg}_{j}"] = bic
+
+        if bic_map:
+            st.subheader("View Bicluster Details")
+            sel_id = st.selectbox("Select bicluster", list(bic_map.keys()))
+            bic = bic_map[sel_id]
+            st.write(bicluster_dataframe(bic, matrix, gene_ids, cond_ids))
 
 if __name__=="__main__":
     main()
