@@ -1,6 +1,6 @@
 🐬 BCTool — Gene Expression Matrix Analyzer GUI
 
-BCTool is a comprehensive graphical interface for exploring and analyzing large-scale gene expression datasets. It simplifies the process of transforming HCL files into Python-readable submatrices and provides accessible tools for biclustering, GO enrichment, and visual data exploration.
+BCTool is a comprehensive graphical interface for exploring and analyzing large-scale gene expression datasets. It simplifies the process of transforming HCL files into Python-readable submatrices and provides accessible tools for biclustering and visual data exploration.
 
 🔧 Features Overview
 
@@ -26,16 +26,6 @@ OPSM (Order-Preserving Submatrix)
 
 BiVisu with visualization support
 
-GO Enrichment Integration:
-
-Gene Ontology analysis for functional enrichment
-
-Supports Biological Process, Molecular Function, and Cellular Component categories
-
-P-value correction and significance testing built-in
-
-Detailed Statistical Summaries: Outputs relevant statistical information for interpretation
-
 
 
 📊 Interactive Visualization
@@ -43,8 +33,6 @@ Detailed Statistical Summaries: Outputs relevant statistical information for int
 Heatmap Display: Explore overall expression trends
 
 Bicluster Visual Comparisons: Contrast algorithm outputs side by side
-
-GO Term Visual Summaries: Examine biological enrichment results graphically
 
 
 
@@ -55,8 +43,6 @@ Flexible File Output: Save results as JSON, CSV, or Excel
 Export Options Include:
 
 Bicluster details
-
-Enrichment results
 
 Processed matrix files
 
@@ -151,15 +137,13 @@ Heatmaps for expression overview
 
 Visual comparison of biclusters
 
-GO enrichment charts
-
 Exporting Outputs
 
 Head to the Results tab
 
 Select the desired file format (CSV, JSON, Excel)
 
-Export biclusters, GO enrichment findings, or matrices
+Export biclusters or matrices
 
 
 
@@ -200,15 +184,12 @@ metadata {
 BCTool/
 ├── BCTool_GUI.py          # Streamlit interface
 ├── adapter.py             # Algorithm adapters
-├── GO_assessment.py       # Gene Ontology tools
 ├── LAS_algorithm.py
 ├── Chen_Church_algorithm.py
 ├── ISA_algorithm.py
 ├── OPSM_algorithm.py
 ├── Bivisu_algorithm.py
 ├── requirements.txt
-├── go-basic.obo
-├── gene2go.gz
 └── README.md
 
 🛠️ Algorithms Included
@@ -225,16 +206,6 @@ OPSM: Discovers order-preserving submatrices in expression data
 
 BiVisu: Combines biclustering with visual output capabilities
 
-GO Enrichment
-
-
-
-
-Supports multiple Gene Ontology categories
-
-Performs enrichment analysis with statistical testing
-
-Visual output for biological interpretation
 
 🛠️ Troubleshooting Guide
 
@@ -258,9 +229,6 @@ HCL Parsing Problems
 Review HCL file structure against provided example
 
 
-GO Analysis Not Working
-
-Ensure internet connectivity for GO database downloads
 
 
 Additional Help
@@ -311,7 +279,7 @@ Update GUI options accordingly
 
 BCTool integrates multiple published algorithms under their respective licenses. The overall project is released under the [MIT License](LICENSE). Review individual files for licensing details.
 
-If you publish work utilizing BCTool, please acknowledge the source algorithms and Gene Ontology tools accordingly.
+If you publish work utilizing BCTool, please acknowledge the source algorithms accordingly.
 
 
 ✅ Final Notes

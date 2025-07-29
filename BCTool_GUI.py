@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from GO_assessment import go_assessment
 import adapter
 
 def uploaded_data(data):
@@ -20,8 +19,8 @@ def uploaded_data(data):
     if df.isna().any().any():
         st.warning("Non-numeric values found; coerced to NaN and dropped.")
         df = df.dropna(axis=0, how="any")
-    gene_ids = df.index.tolist()        # for GO assessment
-    matrix   = df.to_numpy(dtype=float) # for the biclustering algos
+    gene_ids = df.index.tolist()
+    matrix   = df.to_numpy(dtype=float)
     return matrix, gene_ids
 
 algorithms = ["LAS", "Chen and Church", "ISA", "OPSM", "Bivisu"]
@@ -73,13 +72,6 @@ def main():
     with st.sidebar:
         st.header("Customization")
         matrix, gene_ids = uploaded_data(data)
-        taxid = st.number_input("What is the taxonomy identifier?")
-        default_p = [0.05, 0.01, 0.001]
-        p_vals = st.sidebar.multiselect(
-        "GO enrichment thresholds",
-        options=default_p,
-        default=default_p
-        )
         st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
@@ -182,26 +174,10 @@ def main():
             st.session_state["Biclusters"] = s
 
     if "Biclusters" in st.session_state and matrix is not None:
-        gene_universe = set(gene_ids)
-        all_enrich = []
         st.header("Algorithm(s)")
         for i, (alg, bic_list) in enumerate(st.session_state["Biclusters"]):
             st.subheader(alg)
             st.write(summarize_biclusters(bic_list, gene_ids, alg))
-
-            bic_gene_lists = [[gene_ids[i] for i in bic.rows] for bic in bic_list]
-            enrich = go_assessment(int(taxid), bic_gene_lists, gene_universe,
-                                   p_vals=p_vals)
-
-            row = {"Algorithm": alg}
-            for pv in p_vals:
-                row[str(pv)] = 100 * enrich[pv]
-            all_enrich.append(row)
-
-        if all_enrich:
-            enrich_df = pd.DataFrame(all_enrich).set_index("Algorithm")
-            enrich_df = enrich_df[[str(p) for p in p_vals]]
-            st.bar_chart(enrich_df)
 
 if __name__=="__main__":
     main()
