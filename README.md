@@ -33,48 +33,6 @@ Output:
 
 
 
-⚙️ Installation Instructions
-
-Requirements
-
-Python 3.8 or newer
-
-pip package manager
-
-Quick Start
-
-pip install -r requirements.txt
-streamlit run BCTool_GUI.py
-
-
-
-Manual Setup
-
-pip install -r requirements.txt
-streamlit run BCTool_GUI.py
-
-Required Python Packages
-
-pandas >= 1.3.0
-
-numpy >= 1.21.0
-
-matplotlib >= 3.5.0
-
-seaborn >= 0.11.0
-
-scikit-learn >= 1.0.0
-
-scipy >= 1.7.0
-
-openpyxl >= 3.0.0
-
-
-
-
-
-
-
 🖥️ Using the Application
 
 Launching
@@ -113,8 +71,6 @@ BCTool/
 └── README.md
 
 🛠️ Algorithms Included
-
-Biclustering
 
 LAS: Locates large, high-mean submatrices with significance testing
 
