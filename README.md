@@ -33,136 +33,31 @@ Output:
 
 
 
-⚙️ Installation Instructions
-
-Requirements
-
-Python 3.8 or newer
-
-pip package manager
-
-Quick Start
-
-pip install -r requirements.txt
-streamlit run BCTool_GUI.py
-
-
-
-Manual Setup
-
-pip install -r requirements.txt
-streamlit run BCTool_GUI.py
-
-Required Python Packages
-
-pandas >= 1.3.0
-
-numpy >= 1.21.0
-
-matplotlib >= 3.5.0
-
-seaborn >= 0.11.0
-
-scikit-learn >= 1.0.0
-
-scipy >= 1.7.0
-
-openpyxl >= 3.0.0
-
-
-
-
-
 
 
 🖥️ Using the Application
 
 Launching
 
-streamlit run BCTool_GUI.py
+Visit the following website:
 
-
-Loading Your Data
-
-Method 1: Expression Matrix Files
-
-Select the Data Loading tab
-
-Choose Load CSV/TSV or Load Excel
-
-The matrix should have gene identifiers in the first column and conditions/samples in the remaining columns
+bctoolgui.streamlit.app
 
 
 
-Method 2: HCL File Processing
 
-Click Load HCL File to select a compatible HCL file
 
-Press Convert to Matrix to transform HCL content into matrix form
-
-Click Use HCL Matrix to proceed to analysis
 
 Running Analyses
 
-Navigate to the Analysis tab
+Navigate to the sidebar
 
 Select the biclustering algorithms to apply
 
 Start the process with Run Analysis
 
-Results appear in the output panel
+Results appear below
 
-Visual Exploration
-
-Open the Visualization tab
-
-Available plot types:
-
-Heatmaps for expression overview
-
-Visual comparison of biclusters
-
-Exporting Outputs
-
-Head to the Results tab
-
-Select the desired file format (CSV, JSON, Excel)
-
-Export biclusters or matrices
-
-
-
-
-
-
-📄 HCL File Format Example
-
-Supported HCL files should resemble the following:
-
-version = "1.0"
-dataset_name = "gene_study"
-
-gene_data "MYC" {
-  expression_values = [4.2, 3.8, 2.1, 5.6]
-  chromosome = "8"
-}
-
-gene_data "EGFR" {
-  expression_values = [3.1, 2.9, 4.0, 3.7]
-  chromosome = "7"
-}
-
-experimental_conditions {
-  condition_1 = "Control"
-  condition_2 = "Treatment"
-  condition_3 = "Recovery"
-  condition_4 = "Extended"
-}
-
-metadata {
-  organism = "Homo sapiens"
-  platform = "RNA-seq"
-}
 
 📁 Project Layout
 
@@ -192,37 +87,6 @@ OPSM: Discovers order-preserving submatrices in expression data
 BiVisu: Combines biclustering with visual output capabilities
 
 
-🛠️ Troubleshooting Guide
-
-Issue
-
-Recommended Solution
-
-
-Import Errors
-
-Verify dependencies with pip install -r requirements.txt
-
-
-Memory Errors with Large Data
-
-Subsample the dataset or upgrade system RAM (8GB+ recommended)
-
-
-HCL Parsing Problems
-
-Review HCL file structure against provided example
-
-
-
-
-Additional Help
-
-streamlit run BCTool_GUI.py
-
-Check terminal messages for error details.
-
-
 
 ⚡ Optimization Tips
 
@@ -231,33 +95,6 @@ For datasets with more than 5,000 genes:
 Start with a reduced dataset
 
 Run algorithms separately to manage memory usage
-
-Consider systems with higher RAM capacity
-
-
-🧪 Running Tests
-----------------
-
-The repository includes a small test suite powered by `pytest`.
-After installing the dependencies you can run all tests with:
-
-```bash
-pip install -r requirements.txt pytest
-pytest
-```
-
-
-
-👍 Contributing to BCTool
-
-To incorporate new biclustering algorithms:
-
-Implement the algorithm in the algorithms/ directory following the adapter format
-
-Register it within adapter.py under the ALL_ALGOS dictionary
-
-Update GUI options accordingly
-
 
 
 📜 License & Citation
