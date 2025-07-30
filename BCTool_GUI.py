@@ -121,6 +121,35 @@ def main():
             if not data:
                 st.error("No data found. Please ensure that the data is available.")
                 st.stop()
+            # Check for zero-valued parameters and stop with an error
+            if "LAS" in st.session_state["sel_alg"]:
+                if any(
+                    p == 0
+                    for p in (alpha_LAS, max_iter_LAS, k_rows_LAS, k_cols_LAS)
+                ):
+                    st.error("LAS parameters cannot be zero. Please provide values.")
+                    st.stop()
+            if "Chen and Church" in st.session_state["sel_alg"]:
+                if any(p == 0 for p in (delta_C_C, alpha_C_C, max_bi_C_C)):
+                    st.error(
+                        "Chen and Church parameters cannot be zero. Please provide values."
+                    )
+                    st.stop()
+            if "ISA" in st.session_state["sel_alg"]:
+                if any(p == 0 for p in (n_seeds_ISA, seed_size_ISA, t_g_ISA, t_c_ISA)):
+                    st.error("ISA parameters cannot be zero. Please provide values.")
+                    st.stop()
+            if "OPSM" in st.session_state["sel_alg"]:
+                if any(p == 0 for p in (k_OPSM, restarts_OPSM)):
+                    st.error("OPSM parameters cannot be zero. Please provide values.")
+                    st.stop()
+            if "Bivisu" in st.session_state["sel_alg"]:
+                if any(
+                    p == 0
+                    for p in (eps_Bivisu, msr_Bivisu, min_genes_Bivisu, min_cond_Bivisu)
+                ):
+                    st.error("Bivisu parameters cannot be zero. Please provide values.")
+                    st.stop()
             s = st.session_state.get("Biclusters", [])
 
             if isinstance(s, dict):
