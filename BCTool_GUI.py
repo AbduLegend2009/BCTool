@@ -84,8 +84,8 @@ def main():
         st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
-            alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?")
-            max_iter_LAS = st.number_input("What is the maximum amount of iterations?")
+            alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?", value=1)
+            max_iter_LAS = st.number_input("What is the maximum amount of iterations?",value=100)
             k_rows_LAS = st.number_input(
                 "How many rows in candidate submatrices?", value=10, step=1, min_value=1
             )
@@ -94,26 +94,26 @@ def main():
             )
         if "Chen and Church" in st.session_state["sel_alg"]:
             st.header("Chen and Church")
-            delta_C_C = st.number_input("What is the MSR threshold for biclusters?")
-            alpha_C_C = st.number_input("What fraction of the cells are we allowed to prune?")
-            max_bi_C_C = st.number_input("What is the maximum number of biclusters?")
+            delta_C_C = st.number_input("What is the MSR threshold for biclusters?", value=0.05)
+            alpha_C_C = st.number_input("What fraction of the cells are we allowed to prune?", value=0.05)
+            max_bi_C_C = st.number_input("What is the maximum number of biclusters?", value=50)
         if "ISA" in st.session_state["sel_alg"]:
-            st.header("ISA")
-            n_seeds_ISA = st.number_input("How many starting seeds?")
-            seed_size_ISA = st.number_input("How many starting conditions in each seed?")
-            t_g_ISA = st.number_input("What is the gene z-score threshold?")
-            t_c_ISA = st.number_input("What is the condition z-score threshold?")
+            st.header("ISSA")
+            n_seeds_ISA = st.number_input("How many starting seeds?", value=5)
+            seed_size_ISA = st.number_input("How many starting conditions in each seed?", value=3)
+            t_g_ISA = st.number_input("What is the gene z-score threshold?", value=1)
+            t_c_ISA = st.number_input("What is the condition z-score threshold?", value=1)
         if "OPSM" in st.session_state["sel_alg"]:
             st.header("OPSM")
-            k_OPSM = st.number_input("What is the maximum amount of conditions in each bicluster?")
-            restarts_OPSM = st.number_input("How many restarts?")
+            k_OPSM = st.number_input("What is the maximum amount of conditions in each bicluster?", value=5)
+            restarts_OPSM = st.number_input("How many restarts?", value=50)
         if "Bivisu" in st.session_state["sel_alg"]:
             st.header("Bivisu")
             model_Bivisu = st.selectbox("Which model do you want to be used?", ["add", "mult", "auto"], index = 2)
-            eps_Bivisu = st.number_input("What is the bin width when quantasising the signature algorithms?")
-            msr_Bivisu = st.number_input("What is the MSR cutoff?")
-            min_genes_Bivisu = st.number_input("What is the lowest number of genes per bicluster?")
-            min_cond_Bivisu = st.number_input("What is the lowest number of conditions per bicluster?")
+            eps_Bivisu = st.number_input("What is the bin width when quantasising the signature algorithms?", value=0.01)
+            msr_Bivisu = st.number_input("What is the MSR cutoff?", value=0.01)
+            min_genes_Bivisu = st.number_input("What is the lowest number of genes per bicluster?", value=4)
+            min_cond_Bivisu = st.number_input("What is the lowest number of conditions per bicluster?", value=4)
         if st.button("Run algorithms 🚀"):
             if not st.session_state["sel_alg"]:
                 st.error("No algorithms found. Please ensure that algorithms are available.")
