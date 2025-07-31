@@ -84,7 +84,7 @@ def main():
         st.session_state["sel_alg"] = st.multiselect("Please select algorithms", algorithms)
         if "LAS" in st.session_state["sel_alg"]:
             st.header("LAS")
-            alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?", value=1)
+            alpha_LAS = st.number_input("What is the p-value cutoff for biclusters?", value=0.05)
             max_iter_LAS = st.number_input("What is the maximum amount of iterations?",value=100)
             k_rows_LAS = st.number_input(
                 "How many rows in candidate submatrices?", value=10, step=1, min_value=1
