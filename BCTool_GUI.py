@@ -98,7 +98,7 @@ def main():
             alpha_C_C = st.number_input("What fraction of the cells are we allowed to prune?", value=0.05)
             max_bi_C_C = st.number_input("What is the maximum number of biclusters?", value=50)
         if "ISA" in st.session_state["sel_alg"]:
-            st.header("ISSA")
+            st.header("ISA")
             n_seeds_ISA = st.number_input("How many starting seeds?", value=5)
             seed_size_ISA = st.number_input("How many starting conditions in each seed?", value=3)
             t_g_ISA = st.number_input("What is the gene z-score threshold?", value=1)
